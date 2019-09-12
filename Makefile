@@ -13,7 +13,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror #-Weverything #-fsanitize=address
 
-NAME = woody
+NAME = woody_woodpacker
 FILES = woody.c
 
 SRCS_DIR = srcs
