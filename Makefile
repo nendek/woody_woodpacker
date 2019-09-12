@@ -14,7 +14,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror #-Weverything #-fsanitize=address
 
 NAME = woody_woodpacker
-FILES = woody.c
+FILES = woody.c get_text.c creation.c
 
 SRCS_DIR = srcs
 SRCS = $(addprefix $(SRCS_DIR)/,$(FILES))
