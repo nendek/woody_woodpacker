@@ -9,6 +9,11 @@ int32_t	get_type(void *file)
 	if (magic == 0x464C457F)
 	{
 		elf = (Elf64_Ehdr *)file;
+// 		if (elf->e_type != 2)
+// 		{
+// 			dprintf(2, "ERROR, file is not an EXEC\n");
+// 			return (0);
+// 		}
 		if (elf->e_machine == 0x3)
 			return (ELF_32);
 		if (elf->e_machine == 0x3e)
@@ -18,10 +23,12 @@ int32_t	get_type(void *file)
 	return (0);
 }
 
-int32_t	get_text_section(t_info *info, int32_t type)
+int32_t	get_vulnerable_zone(t_info *info, int32_t type)
 {
 	if (type == ELF_64)
-		return (get_elf64_text(info));
+		return (get_elf64_zone(info));
+	if (type == ELF_32)
+		return (get_elf32_zone(info));
 	return (0);
 }
 
@@ -33,19 +40,21 @@ static t_info	*init_info()
 		return (NULL);
 
 	ret->file = NULL;
-	ret->text_section = NULL;
 	return (ret);
 }
 
 int		main(int argc, char **argv)
 {
 	t_info			*info;
-// 	void			*file;
+	// 	void			*file;
 	struct stat		buf;
 	int32_t			fd;
 
 	if (argc != 2)
+	{
+		dprintf(1, "usage: ./woody_woodpacker [file]\n");
 		return (EXIT_FAILURE);
+	}
 	if ((fd = open(argv[1], O_RDONLY)) < 0)
 		return (EXIT_FAILURE);
 	if (!(info = init_info()))
@@ -58,7 +67,7 @@ int		main(int argc, char **argv)
 	if ((info->file = mmap(0, (size_t)buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
 		return (EXIT_FAILURE);
 	info->file_size = (size_t)buf.st_size;
-	if (get_text_section(info, get_type(info->file)) != 0)
+	if (get_vulnerable_zone(info, get_type(info->file)) == 0)
 		return (EXIT_FAILURE);
 	create_woody(info);
 	return (0);
