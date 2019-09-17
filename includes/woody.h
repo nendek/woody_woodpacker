@@ -12,8 +12,8 @@
 # define ELF_32 1
 # define ELF_64 2
 
-extern const char shellcode32[];
-extern const char shellcode64[];
+extern char shellcode32[];
+extern char shellcode64[];
 extern char jmp32[];
 extern char jmp64[];
 
@@ -23,7 +23,7 @@ typedef struct			s_funcs
 {
 	int32_t		(*inject_code)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
-	size_t		(*get_code_size)();
+// 	size_t		(*get_code_size)();
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR
@@ -35,6 +35,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			segment_injection_offset;
 	size_t			base_entry;
 	size_t			offset_injection;
+	size_t			injection_size;
 	t_funcs			*funcs;
 
 };
@@ -47,7 +48,6 @@ void		create_woody(t_info *info);
 
 		/* LIBFT_HANDLER */
 void    ft_memcpy(void *dest, void *src, size_t size);
-char    *ft_strcat(char *dest, const char *src);
 void    ft_bzero(char *str, size_t len);
 
 #endif

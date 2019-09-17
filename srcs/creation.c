@@ -19,7 +19,7 @@ void		create_woody(t_info *info)
 	ft_memcpy(new_file, info->file, info->offset_injection);
 	if ((info->funcs->inject_code(info, new_file + info->offset_injection)) == 0)
 		return ;
-	ft_memcpy(new_file + info->offset_injection + info->funcs->get_code_size(), info->file + info->offset_injection + info->funcs->get_code_size(), info->file_size - info->offset_injection - info->funcs->get_code_size());
+	ft_memcpy(new_file + info->offset_injection + info->injection_size, info->file + info->offset_injection + info->injection_size, info->file_size - info->offset_injection - info->injection_size);
 	info->funcs->replace_headers(info, new_file);
 	print_woody(info, new_file);
 	free(new_file);

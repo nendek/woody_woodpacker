@@ -1,25 +1,21 @@
 #include "woody.h"
-# define INJECTION64_SIZE (sizeof(shellcode64)-1 + sizeof(jmp64)-1)
 
-const char shellcode64[] =
-"\x60\x90\x90\x90\x90\x61";
-
+char shellcode64[] =
+"\x55\x48\x89\xe5\x48\x83\xe4\xf0\x50\x51\x52\x41\x50\x41\x51\x41\x52\x41\x53\x50\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x44\x4f\x4f\x57\xc7\x44\x24\x08\x2e\x2e\x2e\x59\xc7\x44\x24\x10\x0a\x2e\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x89\xe6\xba\x0e\x00\x00\x00\x0f\x05\x58\x41\x5b\x41\x5a\x41\x59\x41\x58\x5a\x59\x58\x48\x89\xec\x5d";
 char jmp64[] = "\xe9\xff\xff\xff\xff\xff\xff\xff\xff";
-
-static size_t		get_injection64_size() { return (INJECTION64_SIZE); }
 
 static int32_t		inject_code64(t_info *info, void *new_file)
 {
 	char		*inject;
 	uint64_t	addr_to_jmp;
 
-	if (!(inject = malloc(get_injection64_size())))
+	if (!(inject = malloc(info->injection_size)))
 		return (0);
-	addr_to_jmp = (uint64_t)(info->base_entry - info->offset_injection - get_injection64_size());
+	addr_to_jmp = (uint64_t)(info->base_entry - info->offset_injection - info->injection_size);
 	ft_memcpy(jmp64 + 1, &(addr_to_jmp), sizeof(uint64_t));
-	ft_strcat(inject, shellcode64);
-	ft_strcat(inject, jmp64);
-	ft_memcpy(new_file, inject, get_injection64_size());
+	ft_memcpy(inject, shellcode64, sizeof(shellcode64) - 1);
+	ft_memcpy(inject + sizeof(shellcode64) - 1, jmp64, sizeof(jmp64) -1);
+	ft_memcpy(new_file, inject, info->injection_size);
 	return (1);
 }
 
@@ -33,8 +29,8 @@ static void			replace_headers64(t_info *info, void *new_file)
 
 	main_header->e_entry = info->offset_injection;
 	program_header = (Elf64_Phdr *)(new_file + info->segment_injection_offset);
-	program_header->p_filesz += get_injection64_size();
-	program_header->p_memsz += get_injection64_size();
+	program_header->p_filesz += info->injection_size;
+	program_header->p_memsz += info->injection_size;
 }
 
 static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
@@ -52,10 +48,12 @@ static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, i
 
 	end_segment = program_header->p_offset + program_header->p_filesz;
 	start_next_segment = (program_header + 1)->p_offset;
-	if (start_next_segment - end_segment < INJECTION64_SIZE)
+	if (start_next_segment - end_segment < info->injection_size)
 		return (0);
 	info->offset_injection = end_segment;
 	info->segment_injection_offset = (size_t)((size_t)program_header - (size_t)(info->file));
+	dprintf(1, "ici\n");
+	dprintf(1, "%#lx\n", info->injection_size);
 	return (1);
 }
 
@@ -67,7 +65,7 @@ int32_t				get_elf64_zone(t_info *info)
 	
 	info->funcs->inject_code = &inject_code64;
 	info->funcs->replace_headers = &replace_headers64;
-	info->funcs->get_code_size = &get_injection64_size;
+	info->injection_size = sizeof(shellcode64) + sizeof(jmp64) - 2;
 
 	header = (Elf64_Ehdr *)(info->file);
 	program_header = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
