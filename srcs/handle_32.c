@@ -19,51 +19,13 @@ char jmp32[] = "\xe9\xff\xff\xff\xff";
 char pusha[] = "\x60";
 char popa[] = "\x61";
 
-// static int32_t ft_strcmp(char *s1, char *s2)
-// {
-// 	while (*s1 == *s2 && *s1 && *s2)
-// 	{
-// 		s1++;
-// 		s2++;
-// 	}
-// 	return (*s2 - *s1);
-// }
-// 
 int32_t			get_elf64_zone(t_info *info)
 {
 	(void)info;
-// 	Elf64_Ehdr *header;
-// 	Elf64_Shdr *sections;
-// 	void		*str_table;
-// 	
-// 
-// 	header = (Elf64_Ehdr *)(info->file);
-// 	sections = (Elf64_Shdr *)((size_t)(info->file) + (size_t)(header->e_shoff));
-// 	info->nb_hs = header->e_shnum;
-// 	str_table = sections + header->e_shstrndx;
-// 	str_table = (void *)((size_t)(info->file) + (size_t)(((Elf64_Shdr *)(str_table))->sh_offset));
-// 	(void)str_table;
-// 	
-// 	for (int32_t i = 0; i < info->nb_hs; i++)
-// 	{
-// 		if (ft_strcmp((char *)(str_table + sections->sh_name), ".text") == 0)
-// 		{
-// 			info->text_section = (void *)sections;
-// 			info->origin_size = sections->sh_size;
-// 			info->text_offset = sections->sh_offset;
-// 			info->text_section_index = i;
-// 			return (1);
-// 		}
-// 		sections++;
-// 	}
-// 	return (0);
 	return (0);
 }
 
-size_t				get_injection32_size()
-{
-	return (INJECTION32_SIZE);
-}
+size_t				get_injection32_size() { return (INJECTION32_SIZE); }
 
 int32_t				save_place_to_inject(t_info *info, Elf32_Phdr *program_header, int32_t nb_segment)
 {
@@ -76,12 +38,9 @@ int32_t				save_place_to_inject(t_info *info, Elf32_Phdr *program_header, int32_
 		return (0);
 	}
 	if ((program_header->p_flags & PF_X) != PF_X)
-	{
-// 		dprintf(2, "Segment nb %d is not executable\n", nb_segment);
 		return (0);
-	}
+
 	end_segment = program_header->p_offset + program_header->p_filesz;
-	
 	start_next_segment = (program_header + 1)->p_offset;
 	if (start_next_segment - end_segment < INJECTION32_SIZE)
 		return (0);

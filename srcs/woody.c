@@ -46,7 +46,6 @@ static t_info	*init_info()
 int		main(int argc, char **argv)
 {
 	t_info			*info;
-	// 	void			*file;
 	struct stat		buf;
 	int32_t			fd;
 
