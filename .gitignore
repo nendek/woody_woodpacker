@@ -53,3 +53,7 @@ dkms.conf
 
 bytecode64
 bytecode32
+*.swp
+test_bytecode
+exe32
+exe64
