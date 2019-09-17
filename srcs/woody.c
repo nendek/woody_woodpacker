@@ -38,6 +38,8 @@ static t_info	*init_info()
 
 	if (!(ret = malloc(sizeof(t_info))))
 		return (NULL);
+	if (!(ret->funcs = malloc(sizeof(t_funcs))))
+		return (NULL);
 
 	ret->file = NULL;
 	return (ret);
