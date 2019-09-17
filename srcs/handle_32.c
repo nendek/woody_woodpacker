@@ -1,9 +1,9 @@
 #include "woody.h"
-# define INJECTION32_SIZE (sizeof(shellcode32)-1 + sizeof(jmp32)-1 + sizeof(pusha)-1 + sizeof(popa)-1)
+# define INJECTION32_SIZE (sizeof(shellcode32)-1 + sizeof(jmp32)-1)
 
 const char shellcode32[] = 
-"\x31\xc0\x31\xdb\x31\xd2\x68\x72\x6c\x64\x21\xc6\x44\x24\x03\x0a\x68\x6f\x20\x77"
-"\x6f\x68\x48\x65\x6c\x6c\x89\xe1\xb2\x0c\xb0\x04\xb3\x01\xcd\x80\xb2\x0c\x01\xd4";
+"\x60\x31\xc0\x31\xdb\x31\xd2\x68\x72\x6c\x64\x21\xc6\x44\x24\x03\x0a\x68\x6f\x20\x77"
+"\x6f\x68\x48\x65\x6c\x6c\x89\xe1\xb2\x0c\xb0\x04\xb3\x01\xcd\x80\xb2\x0c\x01\xd4\x61";
 // "\x31\xc0\x31\xdb\x31\xc9\x31\xd2"
 // "\xeb\x32\x5b\xb0\x05\x31\xc9\xcd"
 // "\x80\x89\xc6\xeb\x06\xb0\x01\x31"
@@ -16,18 +16,39 @@ const char shellcode32[] =
 // "~/.vimrc";
 
 char jmp32[] = "\xe9\xff\xff\xff\xff";
-char pusha[] = "\x60";
-char popa[] = "\x61";
 
-int32_t			get_elf64_zone(t_info *info)
+static size_t		get_injection32_size() { return (INJECTION32_SIZE); }
+
+static int32_t		inject_code32(t_info *info, void *new_file)
 {
-	(void)info;
-	return (0);
+	char		*inject;
+	uint32_t	addr_to_jmp;
+
+	if (!(inject = malloc(get_injection32_size())))
+		return (0);
+	addr_to_jmp = (uint32_t)(info->base_entry - info->offset_injection - get_injection32_size());
+	ft_memcpy(jmp32 + 1, &(addr_to_jmp), sizeof(uint32_t));
+	ft_strcat(inject, shellcode32);
+	ft_strcat(inject, jmp32);
+	ft_memcpy(new_file, inject, get_injection32_size());
+	return (1);
 }
 
-size_t				get_injection32_size() { return (INJECTION32_SIZE); }
+static void			replace_headers32(t_info *info, void *new_file)
+{
+	Elf32_Ehdr *main_header;
+	Elf32_Phdr *program_header;
 
-int32_t				save_place_to_inject(t_info *info, Elf32_Phdr *program_header, int32_t nb_segment)
+	main_header = (Elf32_Ehdr *)new_file;
+	program_header = (Elf32_Phdr *)(new_file + sizeof(Elf32_Ehdr));
+
+	main_header->e_entry = info->offset_injection;
+	program_header = (Elf32_Phdr *)(new_file + info->segment_injection_offset);
+	program_header->p_filesz += get_injection32_size();
+	program_header->p_memsz += get_injection32_size();
+}
+
+static int32_t		save_place_to_inject(t_info *info, Elf32_Phdr *program_header, int32_t nb_segment)
 {
 	size_t		end_segment;
 	size_t		start_next_segment;
@@ -55,6 +76,10 @@ int32_t				get_elf32_zone(t_info *info)
 	Elf32_Phdr *program_header;
 	int			i;
 	
+	info->funcs->inject_code = &inject_code32;
+	info->funcs->replace_headers = &replace_headers32;
+	info->funcs->get_code_size = &get_injection32_size;
+
 	header = (Elf32_Ehdr *)(info->file);
 	program_header = (Elf32_Phdr *)(info->file + sizeof(Elf32_Ehdr));
 
