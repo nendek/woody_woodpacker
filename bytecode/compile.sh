@@ -7,7 +7,7 @@ rm bytecode32.o
 rm bytecode64.o
 (for i in $(objdump -d exe64 |grep "^ " |cut -f2); do echo -n 'x'$i; done;) > bytecode64
 (for i in $(objdump -d exe32 |grep "^ " |cut -f2); do echo -n 'x'$i; done;) > bytecode32
-rm exe32
-rm exe64
+#rm exe32
+#rm exe64
 sed -i 's/x/\\x/g' bytecode64
 sed -i 's/x/\\x/g' bytecode32
