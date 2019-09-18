@@ -35,6 +35,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			segment_injection_offset;
 	size_t			base_entry;
 	size_t			offset_injection;
+	size_t			offset_append;
 	size_t			injection_size;
 	t_funcs			*funcs;
 
@@ -45,6 +46,8 @@ int32_t		get_elf64_zone(t_info *info);
 int32_t		get_elf32_zone(t_info *info);
 
 void		create_woody(t_info *info);
+
+void		create_packer(t_info *info, void *new_file);
 
 		/* LIBFT_HANDLER */
 void    ft_memcpy(void *dest, void *src, size_t size);
