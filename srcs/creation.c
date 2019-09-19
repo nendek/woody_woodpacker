@@ -1,7 +1,14 @@
 #include "woody.h"
 
-char sht[] = 
-"\x50\x51\x52\x41\x50\x41\x51\x41\x52\x41\x53\x50\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10\x58\x41\x5b\x41\x5a\x41\x59\x41\x58\x5a\x59\x58";
+# define ALIGN_APPEND 2
+
+# define WOODY_SIZE sizeof(woody64) - 1
+static char woody64[] = 
+"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10";
+
+# define JMPL_SIZE sizeof(jmploader) -1
+static char jmploader[] = 
+"\xe9\xff\xff\xff\xff";
 
 void	print_woody(void *file, size_t size, char *name)
 {
@@ -12,22 +19,6 @@ void	print_woody(void *file, size_t size, char *name)
 	write(fd, file, size); 
 	close(fd);
 }
-
-// void		create_woody(t_info *info)
-// {
-// 	void	*new_file;
-// 
-// 	if (!(new_file = malloc(info->file_size)))
-// 		return ;
-// 	ft_memcpy(new_file, info->file, info->offset_injection);
-// 	if ((info->funcs->inject_code(info, new_file + info->offset_injection)) == 0)
-// 		return ;
-// 	ft_memcpy(new_file + info->offset_injection + info->injection_size, info->file + info->offset_injection + info->injection_size, info->file_size - info->offset_injection - info->injection_size);
-// 	info->funcs->replace_headers(info, new_file);
-// 	create_packer(info, new_file);
-// 	print_woody(info, new_file);
-// 	free(new_file);
-// }
 
 Elf64_Phdr *get_last_load(void *file)
 {
@@ -42,6 +33,24 @@ Elf64_Phdr *get_last_load(void *file)
 	return (program_header);
 }
 
+void		replace_jmploader(t_info *info, Elf64_Phdr  *program_header)
+{
+	// adresse d'arrivee : offset_injection + la moitie (en dur = 0x24)
+	// adresse relative : adresse du jump - adresse courante
+	// adresse de depart : program_header->p_vaddr + + program_header->p_filesz + WOODY_SIZE - 1
+
+	size_t		depart;
+	size_t		arrive;
+	uint32_t	rel = 0;
+
+	depart = program_header->p_vaddr + program_header->p_filesz + WOODY_SIZE;
+	arrive = info->offset_injection + 0x2C;
+	rel = (uint32_t)(arrive - depart);
+
+	ft_memcpy(jmploader + 1, &(rel), sizeof(uint32_t));
+
+}
+
 void		append_code(t_info *info, void *new_file)
 {
 	Elf64_Phdr	*program_header;
@@ -49,12 +58,14 @@ void		append_code(t_info *info, void *new_file)
 
 	program_header = get_last_load(new_file);
 
-	offset_append = program_header->p_offset + program_header->p_filesz;
+	offset_append = program_header->p_offset + program_header->p_filesz + ALIGN_APPEND;
 	info->offset_append = offset_append;
-	ft_memcpy(new_file + offset_append, sht, sizeof(sht) -1);
+	ft_memcpy(new_file + offset_append, woody64, WOODY_SIZE);
+	replace_jmploader(info, program_header);
+	ft_memcpy(new_file + offset_append + WOODY_SIZE, jmploader, JMPL_SIZE);
 
-	program_header->p_filesz += sizeof(sht) - 1;
-	program_header->p_memsz += sizeof(sht) - 1;
+	program_header->p_filesz += WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND;
+	program_header->p_memsz += WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND;
 }
 
 
@@ -62,7 +73,7 @@ void		create_woody(t_info *info)
 {
 	void	*new_file;
 
-	if (!(new_file = malloc(info->file_size + sizeof(sht) - 1)))
+	if (!(new_file = malloc(info->file_size + WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND)))
 		return ;
 	ft_memcpy(new_file, info->file, info->offset_injection);
 
@@ -73,8 +84,7 @@ void		create_woody(t_info *info)
 
 	info->funcs->replace_headers(info, new_file);
 	append_code(info, new_file);
-// 	create_packer(info, new_file);
 	print_woody(new_file, info->file_size, "woody");
-	print_woody(new_file, info->file_size + sizeof(sht) - 1, "packer");
+	print_woody(new_file, info->file_size + WOODY_SIZE, "packer");
 	free(new_file);
 }

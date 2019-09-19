@@ -12,11 +12,6 @@
 # define ELF_32 1
 # define ELF_64 2
 
-extern char shellcode32[];
-extern char shellcode64[];
-extern char jmp32[];
-extern char jmp64[];
-
 typedef struct			s_MEgA_StRuCtuRrRE_HAXOR t_info;
 
 typedef struct			s_funcs
