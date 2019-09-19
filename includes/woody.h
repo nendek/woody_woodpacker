@@ -30,9 +30,8 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			segment_injection_offset;
 	size_t			base_entry;
 	size_t			offset_injection;
-	size_t			injection_align;
 	size_t			offset_append;
-	size_t			append_align;
+	size_t			bss_size;
 	size_t			injection_size;
 	t_funcs			*funcs;
 

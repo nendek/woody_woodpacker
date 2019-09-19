@@ -17,7 +17,8 @@ void				modify_loader(t_info *info)
 	size_t		offset;
 
 	header = get_last_load(info->file);
-	offset = header->p_vaddr + header->p_filesz - info->offset_injection; //+ (info->offset_injection & 1);
+	offset = header->p_vaddr + header->p_memsz + 7 - info->offset_injection; //+ (info->offset_injection & 1);
+	dprintf(1, "%#lx || %#lx\n", offset, header->p_memsz);
 
 	// change first load: get addr : last_header->v_addr + last_hader->filesz - info->offset_injection - 31 (offset dans le shellcode)
 	new_rel = offset - 31;
@@ -65,8 +66,8 @@ static void			replace_headers64(t_info *info, void *new_file)
 
 	main_header->e_entry = info->offset_injection;
 	program_header = (Elf64_Phdr *)(new_file + info->segment_injection_offset);
-	program_header->p_filesz += info->injection_size + info->injection_align;
-	program_header->p_memsz += info->injection_size + info->injection_align;
+	program_header->p_filesz += info->injection_size;
+	program_header->p_memsz += info->injection_size;
 }
 
 static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
@@ -84,10 +85,9 @@ static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, i
 
 	end_segment = program_header->p_offset + program_header->p_filesz;
 	start_next_segment = (program_header + 1)->p_offset;
-	if (start_next_segment - ((((end_segment - 1) >> 4) << 4) + 16) < info->injection_size)
+	if (start_next_segment - end_segment < info->injection_size)
 		return (0);
-	info->offset_injection = (((end_segment - 1) >> 4) << 4) + 16; // align on 16 bytes
-	info->injection_align = info->offset_injection - end_segment;
+	info->offset_injection = end_segment;
 	info->segment_injection_offset = (size_t)((size_t)program_header - (size_t)(info->file));
 	return (1);
 }
