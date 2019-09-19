@@ -20,7 +20,7 @@ nasm -f elf64 loader64.s
 printf "\"" > loader64
 (for i in $(objdump -d loader64.o |grep "^ " |cut -f2); do echo -n 'x'$i; done;) >> loader64
 printf "\";\n" >> loader64
-rm loader64.o
+#rm loader64.o
 sed -i 's/x/\\x/g' loader64
 
 #as -o test.o test.s

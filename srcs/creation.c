@@ -23,10 +23,15 @@ void	print_woody(void *file, size_t size, char *name)
 Elf64_Phdr *get_last_load(void *file)
 {
 	Elf64_Phdr	*program_header;
+	int			i = 0;
 
 	program_header = (Elf64_Phdr *)(file + sizeof(Elf64_Ehdr));
 	while (program_header->p_type != PT_LOAD)
+	{
+		dprintf(1, "%#x\n", program_header->p_type);
 		program_header++;
+		i++;
+	}
 	while (program_header->p_type == PT_LOAD)
 		program_header++;
 	program_header--;
