@@ -96,13 +96,13 @@ void		create_woody(t_info *info)
 	ft_memcpy(new_file, info->file, info->offset_loader);
 
 	// add the loader code
-	if ((info->funcs->inject_code(info, new_file + info->offset_loader)) == 0)
+	if ((info->funcs->inject_loader(info, new_file + info->offset_loader)) == 0)
 		return ;
 	// add the rest of the original file
 	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->file_size - info->offset_loader - info->loader_size);
 
-	// replace headers to make them work with loader64
-	info->funcs->replace_headers(info, new_file);
+	// replace headers to make them work with loader
+	info->funcs->replace_headers_loader(info, new_file);
 
 	// add the dechiffreur (woody) at the end of the code
 	append_code(info, new_file);

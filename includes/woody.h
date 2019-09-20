@@ -16,8 +16,8 @@ typedef struct			s_MEgA_StRuCtuRrRE_HAXOR t_info;
 
 typedef struct			s_funcs
 {
-	int32_t		(*inject_code)(t_info *, void *);
-	void		(*replace_headers)(t_info *, void *);
+	int32_t		(*inject_loader)(t_info *, void *);
+	void		(*replace_headers_loader)(t_info *, void *);
 // 	size_t		(*get_code_size)();
 }						t_funcs;
 

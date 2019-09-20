@@ -36,7 +36,7 @@ void				modify_loader(t_info *info)
 	
 }
 
-static int32_t		inject_code64(t_info *info, void *new_file)
+static int32_t		inject_loader64(t_info *info, void *new_file)
 {
 	char		*inject;
 	uint64_t	addr_to_jmp;
@@ -57,7 +57,7 @@ static int32_t		inject_code64(t_info *info, void *new_file)
 	return (1);
 }
 
-static void			replace_headers64(t_info *info, void *new_file)
+static void			replace_headers_loader64(t_info *info, void *new_file)
 {
 	Elf64_Ehdr *main_header;
 	Elf64_Phdr *program_header;
@@ -100,8 +100,8 @@ int32_t				get_elf64_zone(t_info *info)
 	int			i;
 	
 	// set functions to 64 bit mode
-	info->funcs->inject_code = &inject_code64;
-	info->funcs->replace_headers = &replace_headers64;
+	info->funcs->inject_loader = &inject_loader64;
+	info->funcs->replace_headers_loader = &replace_headers_loader64;
 	info->loader_size = LOADER_SIZE + JMP64_SIZE;
 
 	
