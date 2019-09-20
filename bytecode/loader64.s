@@ -38,5 +38,5 @@ p3:
 	pop rdx
 	pop rcx
 	pop rax
-	pop rdi
 	pop rsi
+	pop rdi
