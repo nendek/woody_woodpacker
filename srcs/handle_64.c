@@ -19,7 +19,7 @@ void				modify_loader(t_info *info)
 	size_t		offset;
 
 	header = get_last_load(info->file);
-	offset = header->p_vaddr + header->p_memsz + 7 - info->offset_loader; //+ (info->offset_loader & 1);
+	offset = header->p_vaddr + header->p_memsz + (ALIGN_APPEND - 1) - info->offset_loader; //+ (info->offset_loader & 1);
 
 	// change first load : offset 31 dans le shellcode
 	new_rel = offset - 31;
@@ -43,6 +43,7 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 
 	if (!(inject = malloc(info->loader_size)))
 		return (0);
+
 	// calc old entry_point rel addr
 	addr_to_jmp = (uint64_t)(info->base_entry - info->offset_loader - info->loader_size + 4);
 	ft_memcpy(jmp64 + 1, &(addr_to_jmp), sizeof(uint64_t));
@@ -57,11 +58,12 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 	return (1);
 }
 
-static void			replace_headers_loader64(t_info *info, void *new_file)
+static void			replace_headers64(t_info *info, void *new_file)
 {
 	Elf64_Ehdr *main_header;
 	Elf64_Phdr *program_header;
 
+	// first part : replace_headers for loader
 	main_header = (Elf64_Ehdr *)new_file;
 	program_header = (Elf64_Phdr *)(new_file + sizeof(Elf64_Ehdr));
 
@@ -69,6 +71,11 @@ static void			replace_headers_loader64(t_info *info, void *new_file)
 	program_header = (Elf64_Phdr *)(new_file + info->segment_text_header);
 	program_header->p_filesz += info->loader_size;
 	program_header->p_memsz += info->loader_size;
+
+	// second part : replace_headers for woody
+	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
+	program_header->p_filesz += info->bss_size + info->woody_size + ALIGN_APPEND;
+	program_header->p_memsz = program_header->p_filesz;
 }
 
 static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
@@ -101,18 +108,21 @@ int32_t				get_elf64_zone(t_info *info)
 	
 	// set functions to 64 bit mode
 	info->funcs->inject_loader = &inject_loader64;
-	info->funcs->replace_headers_loader = &replace_headers_loader64;
-	info->loader_size = LOADER_SIZE + JMP64_SIZE;
+	info->funcs->replace_headers = &replace_headers64;
 
 	
 	header = (Elf64_Ehdr *)(info->file);
-	program_header = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
 
 	// save usefull infos
 	info->nb_hp = header->e_phnum;
 	info->base_entry = header->e_entry;
-	
-	// get zone to inject loader
+	program_header = get_last_load(info->file);
+	info->bss_size = program_header->p_memsz - program_header->p_filesz;
+	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
+	info->loader_size = LOADER_SIZE + JMP64_SIZE;
+
+	// get zone to inject loader and save offset_loader and segment_text_header
+	program_header = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
 	i = 0;
 	while (i < info->nb_hp)
 	{

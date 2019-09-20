@@ -11,13 +11,14 @@
 
 # define ELF_32 1
 # define ELF_64 2
+# define ALIGN_APPEND 0x8
 
 typedef struct			s_MEgA_StRuCtuRrRE_HAXOR t_info;
 
 typedef struct			s_funcs
 {
 	int32_t		(*inject_loader)(t_info *, void *);
-	void		(*replace_headers_loader)(t_info *, void *);
+	void		(*replace_headers)(t_info *, void *);
 // 	size_t		(*get_code_size)();
 }						t_funcs;
 
@@ -31,7 +32,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			base_entry;
 	size_t			bss_size;
 	size_t			segment_text_header;
-	size_t			segment_data_hader;
+	size_t			segment_data_header;
 
 	// packer file info
 	size_t			offset_loader;

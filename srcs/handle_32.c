@@ -35,7 +35,7 @@ static int32_t		inject_loader32(t_info *info, void *new_file)
 	return (1);
 }
 
-static void			replace_headers_loader32(t_info *info, void *new_file)
+static void			replace_headers32(t_info *info, void *new_file)
 {
 	Elf32_Ehdr *main_header;
 	Elf32_Phdr *program_header;
@@ -78,7 +78,7 @@ int32_t				get_elf32_zone(t_info *info)
 	int			i;
 	
 	info->funcs->inject_loader = &inject_loader32;
-	info->funcs->replace_headers_loader = &replace_headers_loader32;
+	info->funcs->replace_headers = &replace_headers32;
 	info->loader_size = sizeof(shellcode32) + sizeof(jmp32) - 2;
 
 	header = (Elf32_Ehdr *)(info->file);

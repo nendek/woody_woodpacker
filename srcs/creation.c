@@ -1,7 +1,5 @@
 #include "woody.h"
 
-# define ALIGN_APPEND 8
-
 # define WOODY_SIZE sizeof(woody64) - 1
 static char woody64[] = 
 "\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10";
@@ -23,15 +21,10 @@ void	print_woody(void *file, size_t size, char *name)
 Elf64_Phdr *get_last_load(void *file)
 {
 	Elf64_Phdr	*program_header;
-	int			i = 0;
 
 	program_header = (Elf64_Phdr *)(file + sizeof(Elf64_Ehdr));
 	while (program_header->p_type != PT_LOAD)
-	{
-// 		dprintf(1, "%#x\n", program_header->p_type);
 		program_header++;
-		i++;
-	}
 	while (program_header->p_type == PT_LOAD)
 		program_header++;
 	program_header--;
@@ -58,39 +51,35 @@ void		replace_jmploader(t_info *info, Elf64_Phdr  *program_header)
 
 void		append_code(t_info *info, void *new_file)
 {
-	Elf64_Phdr	*program_header;
-	size_t		offset_woody;
+	// append woody to the end of the .bss
+	ft_memcpy(new_file + info->offset_woody, woody64, WOODY_SIZE);
 
-	program_header = get_last_load(new_file);
+	// edit jump shellcode
+	replace_jmploader(info, new_file + info->segment_data_header);
 
-	offset_woody = program_header->p_offset + program_header->p_memsz + ALIGN_APPEND;
-	info->offset_woody = offset_woody;
-	ft_memcpy(new_file + offset_woody, woody64, WOODY_SIZE);
-	replace_jmploader(info, program_header);
-	ft_memcpy(new_file + offset_woody + WOODY_SIZE, jmploader, JMPL_SIZE);
+	// append jump to loader to the end of the woody shellcode
+	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmploader, JMPL_SIZE);
 
-	program_header->p_filesz += info->bss_size + WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND;
-	program_header->p_memsz = program_header->p_filesz;
-	dprintf(1, "offset append : %#lx || p_memsz : %#lx\n", offset_woody, program_header->p_memsz);
 }
 
 
 void		create_woody(t_info *info)
 {
 	void		*new_file;
-	Elf64_Phdr	*header;
-	size_t		bss_size;
+	size_t		new_file_size;
 
-	dprintf(1, "woody_size : %#lx\n", WOODY_SIZE);
-	// get usefull infos
+	// get usefull infos : TODO move it in get_elf64_zone
+	Elf64_Phdr	*header;
 	header = get_last_load(info->file);
-	bss_size = header->p_memsz - header->p_filesz;
-	info->bss_size = bss_size;
+	info->offset_woody = header->p_offset + header->p_memsz + ALIGN_APPEND;
+	info->woody_size = WOODY_SIZE + JMPL_SIZE;
+
 
 	// create and init new_file
-	if (!(new_file = malloc(info->file_size + WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND + bss_size)))
+	new_file_size = info->file_size + info->bss_size + ALIGN_APPEND + info->woody_size;
+	if (!(new_file = malloc(new_file_size)))
 		return ;
-	ft_bzero(new_file, info->file_size + WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND + bss_size);
+	ft_bzero(new_file, new_file_size);
 
 	// recopy headers and .text of the original file
 	ft_memcpy(new_file, info->file, info->offset_loader);
@@ -101,14 +90,14 @@ void		create_woody(t_info *info)
 	// add the rest of the original file
 	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->file_size - info->offset_loader - info->loader_size);
 
-	// replace headers to make them work with loader
-	info->funcs->replace_headers_loader(info, new_file);
-
 	// add the dechiffreur (woody) at the end of the code
 	append_code(info, new_file);
 
+	// replace headers to make them work with loader
+	info->funcs->replace_headers(info, new_file);
+
 	// write the file
 	// 	print_woody(new_file, info->file_size, "woody");
-	print_woody(new_file, info->file_size + WOODY_SIZE + JMPL_SIZE + ALIGN_APPEND + info->bss_size, "packer");
+	print_woody(new_file, new_file_size, "packer");
 	free(new_file);
 }
