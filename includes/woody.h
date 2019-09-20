@@ -26,13 +26,18 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	void			*file;
 	size_t			file_size;
 
+	// base file info
 	int32_t			nb_hp;
-	size_t			segment_injection_offset;
 	size_t			base_entry;
-	size_t			offset_injection;
-	size_t			offset_append;
 	size_t			bss_size;
-	size_t			injection_size;
+	size_t			segment_text_header;
+	size_t			segment_data_hader;
+
+	// packer file info
+	size_t			offset_loader;
+	size_t			loader_size;
+	size_t			offset_woody;
+	size_t			woody_size;
 	t_funcs			*funcs;
 
 };

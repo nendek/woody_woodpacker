@@ -25,13 +25,13 @@ static int32_t		inject_code32(t_info *info, void *new_file)
 	char		*inject;
 	uint32_t	addr_to_jmp;
 
-	if (!(inject = malloc(info->injection_size)))
+	if (!(inject = malloc(info->loader_size)))
 		return (0);
-	addr_to_jmp = (uint32_t)(info->base_entry - info->offset_injection - info->injection_size);
+	addr_to_jmp = (uint32_t)(info->base_entry - info->offset_loader - info->loader_size);
 	ft_memcpy(jmp32 + 1, &(addr_to_jmp), sizeof(uint32_t));
 	ft_memcpy(inject, shellcode32, sizeof(shellcode32) - 1);
 	ft_memcpy(inject + (sizeof(shellcode32) - 1), jmp32, sizeof(jmp32) - 1);
-	ft_memcpy(new_file, inject, info->injection_size);
+	ft_memcpy(new_file, inject, info->loader_size);
 	return (1);
 }
 
@@ -43,10 +43,10 @@ static void			replace_headers32(t_info *info, void *new_file)
 	main_header = (Elf32_Ehdr *)new_file;
 	program_header = (Elf32_Phdr *)(new_file + sizeof(Elf32_Ehdr));
 
-	main_header->e_entry = info->offset_injection;
-	program_header = (Elf32_Phdr *)(new_file + info->segment_injection_offset);
-	program_header->p_filesz += info->injection_size;
-	program_header->p_memsz += info->injection_size;
+	main_header->e_entry = info->offset_loader;
+	program_header = (Elf32_Phdr *)(new_file + info->segment_text_header);
+	program_header->p_filesz += info->loader_size;
+	program_header->p_memsz += info->loader_size;
 }
 
 static int32_t		save_place_to_inject(t_info *info, Elf32_Phdr *program_header, int32_t nb_segment)
@@ -64,10 +64,10 @@ static int32_t		save_place_to_inject(t_info *info, Elf32_Phdr *program_header, i
 
 	end_segment = program_header->p_offset + program_header->p_filesz;
 	start_next_segment = (program_header + 1)->p_offset;
-	if (start_next_segment - end_segment < info->injection_size)
+	if (start_next_segment - end_segment < info->loader_size)
 		return (0);
-	info->offset_injection = end_segment;
-	info->segment_injection_offset = (size_t)((size_t)program_header - (size_t)(info->file));
+	info->offset_loader = end_segment;
+	info->segment_text_header = (size_t)((size_t)program_header - (size_t)(info->file));
 	return (1);
 }
 
@@ -79,7 +79,7 @@ int32_t				get_elf32_zone(t_info *info)
 	
 	info->funcs->inject_code = &inject_code32;
 	info->funcs->replace_headers = &replace_headers32;
-	info->injection_size = sizeof(shellcode32) + sizeof(jmp32) - 2;
+	info->loader_size = sizeof(shellcode32) + sizeof(jmp32) - 2;
 
 	header = (Elf32_Ehdr *)(info->file);
 	program_header = (Elf32_Phdr *)(info->file + sizeof(Elf32_Ehdr));
