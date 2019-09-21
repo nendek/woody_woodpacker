@@ -41,8 +41,8 @@ void		replace_jmploader(t_info *info, Elf64_Phdr  *program_header)
 	size_t		arrive;
 	uint32_t	rel = 0;
 
-	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE;
-	arrive = info->offset_loader + 0x26;
+	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE + ALIGN_APPEND;
+	arrive = info->offset_loader + 0x2e;
 	rel = (uint32_t)(arrive - depart);
 
 	ft_memcpy(jmploader + 1, &(rel), sizeof(uint32_t));
@@ -51,6 +51,8 @@ void		replace_jmploader(t_info *info, Elf64_Phdr  *program_header)
 
 void		append_code(t_info *info, void *new_file)
 {
+	// add .bss section to the physical file : DO nothing, just jump the section
+
 	// append woody to the end of the .bss
 	ft_memcpy(new_file + info->offset_woody, woody64, WOODY_SIZE);
 
@@ -67,13 +69,14 @@ void		create_woody(t_info *info)
 {
 	void		*new_file;
 	size_t		new_file_size;
+	size_t		end_data_seg;
 
 	// get usefull infos : TODO move it in get_elf64_zone
 	Elf64_Phdr	*header;
 	header = get_last_load(info->file);
 	info->offset_woody = header->p_offset + header->p_memsz + ALIGN_APPEND;
 	info->woody_size = WOODY_SIZE + JMPL_SIZE;
-
+	end_data_seg = header->p_offset + header->p_filesz;
 
 	// create and init new_file
 	new_file_size = info->file_size + info->bss_size + ALIGN_APPEND + info->woody_size;
@@ -87,11 +90,17 @@ void		create_woody(t_info *info)
 	// add the loader code
 	if ((info->funcs->inject_loader(info, new_file + info->offset_loader)) == 0)
 		return ;
-	// add the rest of the original file
-	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->file_size - info->offset_loader - info->loader_size);
 
-	// add the dechiffreur (woody) at the end of the code
+	// add the rest of the file until end .data
+	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, end_data_seg - (info->offset_loader + info->loader_size));
+
+	// add the .bss and the dechiffreur
 	append_code(info, new_file);
+
+	// complete the file
+// 	dprintf(1, "total_size = %#lx\n", new_file_size);
+// 	dprintf(1, "dep new_file : %#lx || dep old_file : %#lx || size : %#lx\n", info->offset_woody + info->woody_size, end_data_seg, info->file_size - end_data_seg);
+	ft_memcpy(new_file + info->offset_woody + info->woody_size, info->file + end_data_seg, info->file_size - end_data_seg);
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
