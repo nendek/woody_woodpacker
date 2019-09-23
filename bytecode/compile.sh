@@ -1,11 +1,19 @@
 #!/bin/sh
-nasm -f elf32 bytecode32.s
-#ld -s -m elf_i386 -o exe32 bytecode32.o
-printf "\"" > bytecode32
-(for i in $(objdump -d bytecode32.o |grep "^ " |cut -f2); do echo -n 'x'$i; done;) >> bytecode32
-printf "\";\n" >> bytecode32
-rm bytecode32.o
-sed -i 's/x/\\x/g' bytecode32
+nasm -f elf32 woody32.s
+#ld -s -o exe32 woody32.o
+printf "\"" > woody32
+(for i in $(objdump -d woody32.o |grep "^ " |cut -f2); do echo -n 'x'$i; done;) >> woody32
+printf "\";\n" >> woody32
+rm woody32.o
+sed -i 's/x/\\x/g' woody32
+
+nasm -f elf32 loader32.s
+#ld -s -m elf_i386 -o exe32 loader32.o
+printf "\"" > loader32
+(for i in $(objdump -d loader32.o |grep "^ " |cut -f2); do echo -n 'x'$i; done;) >> loader32
+printf "\";\n" >> loader32
+rm loader32.o
+sed -i 's/x/\\x/g' loader32
 
 nasm -f elf64 woody64.s
 #ld -s -o exe64 woody64.o

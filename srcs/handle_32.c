@@ -2,12 +2,10 @@
 
 # define LOADER32_SIZE sizeof(loader32) - 1
 static char loader32[] =
-"\x57\x56\x50\x51\x52\x41\x50\x41\x51\x41\x52\x41\x53\x41\x54\xba"
-"\x05\x00\x00\x00\xbe\x5d\x10\x00\x00\x48\x8d\x3d\x5c\x2e\x00\x00"
-"\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\xe9\x4a"
-"\x2e\x00\x00\xba\x03\x00\x00\x00\xbe\x5d\x10\x00\x00\x48\x8d\x3d"
-"\x38\x2e\x00\x00\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00"
-"\x0f\x05\x41\x5c\x41\x5b\x41\x5a\x41\x59\x41\x58\x5a\x59\x58\x5e\x5f";
+"\x60\xba\x05\x00\x00\x00\xb9\x5d\x10\x00\x00\x8d\x9f\x71\x2e\x00"
+"\x00\x81\xe3\x00\xf0\xff\xff\xb8\x7d\x00\x00\x00\xcd\x80\xe9\x5a"
+"\x2e\x00\x00\xba\x03\x00\x00\x00\xb9\x5d\x10\x00\x00\x8d\x9f\x4f"
+"\x2e\x00\x00\x81\xe3\x00\xf0\xff\xff\xb8\x7d\x00\x00\x00\xcd\x80\x61";
 
 # define JMP32_SIZE sizeof(jmp32) - 1
 static char jmp32[] =
@@ -15,7 +13,12 @@ static char jmp32[] =
 
 # define WOODY_SIZE sizeof(woody32) - 1
 static char woody32[] = 
-"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10";
+"\x31\xc0\x31\xdb\x31\xd2\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\x8d\x0c\x24\xbb\x01\x00\x00\x00\xb8\x04\x00\x00\x00\xcd\x80\x83\xc4\x10";
+
+# define JMPL32_SIZE sizeof(jmpl32) - 1
+static char jmpl32[] =
+"\xe9\xff\xff\xff\xff";
+
 
 static Elf32_Phdr	*get_last_load32(void *file)
 {
@@ -41,11 +44,12 @@ static void		replace_jmploader32(t_info *info, void *program_header)
 	uint32_t	rel = 0;
 
 	depart = ((Elf32_Phdr *)(program_header))->p_vaddr + ((Elf32_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
-	//TODO: 0x2E make change
-	arrive = info->offset_loader + 0x2e;
+	//TODO: 0x2E may change
+	arrive = info->offset_loader + 0x1e;
 	rel = (uint32_t)(arrive - depart);
 
-	ft_memcpy(jmp32 + 1, &(rel), sizeof(uint32_t));
+	(void)rel;
+	ft_memcpy(jmpl32 + 1, &(rel), sizeof(uint32_t));
 }
 
 static void		append_code32(t_info *info, void *new_file)
@@ -59,7 +63,7 @@ static void		append_code32(t_info *info, void *new_file)
 	replace_jmploader32(info, new_file + info->segment_data_header);
 
 	// append jump to loader to the end of the woody shellcode
-	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmp32, JMP32_SIZE);
+	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmpl32, JMP32_SIZE);
 
 }
 
@@ -70,19 +74,20 @@ static void		modify_loader(t_info *info)
 	size_t		offset;
 
 	header = get_last_load32(info->file);
-	offset = header->p_vaddr + header->p_memsz - 1 - info->offset_loader; //+ (info->offset_loader & 1);
+	offset = header->p_vaddr + header->p_memsz - 35 - info->offset_loader; //+ (info->offset_loader & 1);
 
-	// change first load : offset 31 dans le shellcode
-	new_rel = offset - 31;
-	ft_memcpy(loader32 + 28, &new_rel, sizeof(uint32_t));
+	(void)new_rel;
+	// change first load : offset 13 dans le shellcode
+	new_rel = offset;
+	ft_memcpy(loader32 + 13, &new_rel, sizeof(uint32_t));
 
-	// change last load: offset 67 dans le shellcode
-	new_rel = offset - 67;
-	ft_memcpy(loader32 + 64, &new_rel, sizeof(uint32_t));
-
-	// change jmp addr: offset 50 dans le shellcode
-	new_rel = offset - 50;
+	// change last load: offset 47 dans le shellcode
+	new_rel = offset;
 	ft_memcpy(loader32 + 47, &new_rel, sizeof(uint32_t));
+
+	// change jmp addr: offset 31 dans le shellcode
+	new_rel = offset;
+	ft_memcpy(loader32 + 31, &new_rel, sizeof(uint32_t));
 
 	
 }
@@ -96,7 +101,7 @@ static int32_t		inject_loader32(t_info *info, void *new_file)
 		return (0);
 
 	// calc old entry_point rel addr
-	addr_to_jmp = (uint32_t)(info->base_entry - info->offset_loader - info->loader_size + 4);
+	addr_to_jmp = (uint32_t)(info->base_entry - info->offset_loader - info->loader_size);
 	ft_memcpy(jmp32 + 1, &(addr_to_jmp), sizeof(uint32_t));
 
 	// modify shellcode_size and rel addr in loader
