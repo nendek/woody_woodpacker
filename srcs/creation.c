@@ -31,15 +31,19 @@ void		create_woody(t_info *info)
 		return ;
 
 	// add the rest of the file until end .data
+	dprintf(1, "%#lx | %#lx | %#lx\n", info->file_size, info->end_data_seg, new_file_size);
 	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->end_data_seg - (info->offset_loader + info->loader_size));
 
+	dprintf(1, "ICI\n");
 	// add the .bss and the dechiffreur
 	info->funcs->append_code(info, new_file);
+	dprintf(1, "ICI\n");
 
 	// complete the file
 // 	dprintf(1, "total_size = %#lx\n", new_file_size);
 // 	dprintf(1, "dep new_file : %#lx || dep old_file : %#lx || size : %#lx\n", info->offset_woody + info->woody_size, end_data_seg, info->file_size - end_data_seg);
 	ft_memcpy(new_file + info->offset_woody + info->woody_size, info->file + info->end_data_seg, info->file_size - info->end_data_seg);
+	dprintf(1, "ICI\n");
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);

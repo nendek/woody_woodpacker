@@ -20,7 +20,7 @@ typedef struct			s_funcs
 	void		(*replace_headers)(t_info *, void *);
 // 	size_t		(*get_code_size)();
 	void		(*append_code)(t_info *, void *);
-	void		(*replace_jmploader)(t_info *, Elf64_Phdr *);
+	void		(*replace_jmploader)(t_info *, void *);
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR

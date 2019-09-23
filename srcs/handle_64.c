@@ -1,6 +1,6 @@
 #include "woody.h"
 
-# define LOADER_SIZE sizeof(loader64) - 1
+# define LOADER64_SIZE sizeof(loader64) - 1
 static char loader64[] =
 "\x57\x56\x50\x51\x52\x41\x50\x41\x51\x41\x52\x41\x53\x41\x54\xba"
 "\x05\x00\x00\x00\xbe\x5d\x10\x00\x00\x48\x8d\x3d\x5c\x2e\x00\x00"
@@ -33,7 +33,7 @@ static Elf64_Phdr	*get_last_load64(void *file)
 	return (program_header);
 }
 
-static void		replace_jmploader64(t_info *info, Elf64_Phdr  *program_header)
+static void		replace_jmploader64(t_info *info, void *program_header)
 {
 	// adresse d'arrivee : offset_loader + la moitie (en dur = 0x24)
 	// adresse relative : adresse du jump - adresse courante
@@ -43,7 +43,7 @@ static void		replace_jmploader64(t_info *info, Elf64_Phdr  *program_header)
 	size_t		arrive;
 	uint32_t	rel = 0;
 
-	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE;
+	depart = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
 	arrive = info->offset_loader + 0x2e;
 	rel = (uint32_t)(arrive - depart);
 
@@ -65,7 +65,7 @@ static void		append_code64(t_info *info, void *new_file)
 
 }
 
-void				modify_loader(t_info *info)
+static void				modify_loader(t_info *info)
 {
 	Elf64_Phdr	*header;
 	uint32_t	new_rel;
@@ -105,8 +105,8 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 	modify_loader(info);
 
 	// end injection
-	ft_memcpy(inject, loader64, LOADER_SIZE);
-	ft_memcpy(inject + LOADER_SIZE, jmp64, JMP64_SIZE);
+	ft_memcpy(inject, loader64, LOADER64_SIZE);
+	ft_memcpy(inject + LOADER64_SIZE, jmp64, JMP64_SIZE);
 	ft_memcpy(new_file, inject, info->loader_size);
 	return (1);
 }
@@ -170,7 +170,6 @@ int32_t				get_elf64_zone(t_info *info)
 	info->woody_size = WOODY_SIZE + JMPL_SIZE;
 	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 
-	
 	header = (Elf64_Ehdr *)(info->file);
 
 	// save usefull infos
@@ -179,7 +178,7 @@ int32_t				get_elf64_zone(t_info *info)
 	//program_header = get_last_load(info->file);
 	info->bss_size = program_header->p_memsz - program_header->p_filesz;
 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
-	info->loader_size = LOADER_SIZE + JMP64_SIZE;
+	info->loader_size = LOADER64_SIZE + JMP64_SIZE;
 
 	// get zone to inject loader and save offset_loader and segment_text_header
 	program_header = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
