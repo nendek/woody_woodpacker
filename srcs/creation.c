@@ -18,7 +18,7 @@ void		create_woody(t_info *info)
 
 
 	// create and init new_file
-	new_file_size = info->file_size + info->bss_size + ALIGN_APPEND + info->woody_size;
+	new_file_size = info->file_size + info->bss_size + info->woody_size;
 	if (!(new_file = malloc(new_file_size)))
 		return ;
 	ft_bzero(new_file, new_file_size);

@@ -11,7 +11,6 @@
 
 # define ELF_32 1
 # define ELF_64 2
-# define ALIGN_APPEND 0x0
 
 typedef struct			s_MEgA_StRuCtuRrRE_HAXOR t_info;
 

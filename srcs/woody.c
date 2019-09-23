@@ -25,8 +25,8 @@ int32_t	get_type(void *file)
 
 int32_t	get_vulnerable_zone(t_info *info, int32_t type)
 {
-//	if (type == ELF_64)
-	return (get_elf64_zone(info));
+	if (type == ELF_64)
+		return (get_elf64_zone(info));
 	if (type == ELF_32)
 		return (get_elf32_zone(info));
 	return (0);

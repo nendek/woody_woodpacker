@@ -43,7 +43,7 @@ static void		replace_jmploader64(t_info *info, Elf64_Phdr  *program_header)
 	size_t		arrive;
 	uint32_t	rel = 0;
 
-	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE + ALIGN_APPEND;
+	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE;
 	arrive = info->offset_loader + 0x2e;
 	rel = (uint32_t)(arrive - depart);
 
@@ -72,7 +72,7 @@ void				modify_loader(t_info *info)
 	size_t		offset;
 
 	header = get_last_load64(info->file);
-	offset = header->p_vaddr + header->p_memsz + (ALIGN_APPEND - 1) - info->offset_loader; //+ (info->offset_loader & 1);
+	offset = header->p_vaddr + header->p_memsz - 1 - info->offset_loader; //+ (info->offset_loader & 1);
 
 	// change first load : offset 31 dans le shellcode
 	new_rel = offset - 31;
@@ -127,7 +127,7 @@ static void			replace_headers64(t_info *info, void *new_file)
 
 	// second part : replace_headers for woody
 	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
-	program_header->p_filesz += info->bss_size + info->woody_size + ALIGN_APPEND;
+	program_header->p_filesz += info->bss_size + info->woody_size;
 	program_header->p_memsz = program_header->p_filesz;
 }
 
@@ -166,7 +166,7 @@ int32_t				get_elf64_zone(t_info *info)
 	info->funcs->append_code = &append_code64;
 	
 	program_header = get_last_load64(info->file);
-	info->offset_woody = program_header->p_offset + program_header->p_memsz + ALIGN_APPEND;
+	info->offset_woody = program_header->p_offset + program_header->p_memsz;
 	info->woody_size = WOODY_SIZE + JMPL_SIZE;
 	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 
