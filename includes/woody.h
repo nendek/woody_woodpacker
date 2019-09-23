@@ -18,7 +18,6 @@ typedef struct			s_funcs
 {
 	int32_t		(*inject_loader)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
-// 	size_t		(*get_code_size)();
 	void		(*append_code)(t_info *, void *);
 	void		(*replace_jmploader)(t_info *, void *);
 }						t_funcs;

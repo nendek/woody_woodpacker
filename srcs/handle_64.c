@@ -14,7 +14,7 @@ static char jmp64[] = "\xe9\xff\xff\xff\xff\xff\xff\xff\xff";
 
 # define WOODY_SIZE sizeof(woody64) - 1
 static char woody64[] = 
-"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10";
+"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\xc7\x44\x24\x08\x42\x00\x00\x00\xc7\x04\x24\xff\xff\xff\xff\xba\x03\x00\x00\x00\x48\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x8b\x0c\x24\x8b\x54\x24\x08\x48\x8d\x3d\x7d\xd1\xff\xff\x8a\x07\x48\x31\xd0\xaa\xff\xc9\x85\xc9\x75\xf4\xba\x05\x00\x00\x00\x48\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x48\x83\xc4\x10";
 
 # define JMPL_SIZE sizeof(jmploader) - 1
 static char jmploader[] = 
@@ -50,9 +50,44 @@ static void		replace_jmploader64(t_info *info, void *program_header)
 	ft_memcpy(jmploader + 1, &(rel), sizeof(uint32_t));
 }
 
+static void		modify_woody(t_info *info, void *new_file)
+{
+	Elf64_Phdr	*program_header;
+	size_t		offset;
+	size_t		val;
+
+	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
+	offset = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz - info->base_entry;
+	dprintf(1, "%#lx\n", offset);
+
+	// put size .text section
+	val = info->offset_loader - info->base_entry;
+	ft_memcpy(woody64 + 76, &(val), sizeof(uint32_t));
+
+	// put .text begin addr
+	val = - 103 - offset;
+	ft_memcpy(woody64 + 99, &(val), sizeof(uint32_t));
+
+	// put .text begin addr again
+	val = - 131 - offset;
+	ft_memcpy(woody64 + 127, &(val), sizeof(uint32_t));
+
+	// put .text begin addr again again
+// 	val = - 166 - offset;
+// 	ft_memcpy(woody64 + 162, &(val), sizeof(uint32_t));
+
+	// put decryption key
+// 	val = 0x42;
+// 	ft_memcpy(woody64 + 69, &(val), sizeof(uint32_t));
+
+}
+
 static void		append_code64(t_info *info, void *new_file)
 {
 	// add .bss section to the physical file : DO nothing, just jump the section
+
+	// edit shellcode with infos
+	modify_woody(info, new_file);
 
 	// append woody to the end of the .bss
 	ft_memcpy(new_file + info->offset_woody, woody64, WOODY_SIZE);
@@ -86,7 +121,6 @@ static void				modify_loader(t_info *info)
 	new_rel = offset - 50;
 	ft_memcpy(loader64 + 47, &new_rel, sizeof(uint32_t));
 
-	
 }
 
 static int32_t		inject_loader64(t_info *info, void *new_file)

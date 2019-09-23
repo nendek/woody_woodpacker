@@ -10,6 +10,23 @@ void	print_woody(void *file, size_t size, char *name)
 	close(fd);
 }
 
+void		encryption(t_info *info, void *new_file)
+{
+	char		*text;
+	size_t		i;
+	size_t		size_text;
+
+	i = 0;
+	size_text = info->offset_loader - info->base_entry;
+	text = (char *)(new_file + info->base_entry);
+
+	while (i < size_text)
+	{
+		text[i] ^= 0x42;
+		i++;
+	}
+
+}
 
 void		create_woody(t_info *info)
 {
@@ -44,6 +61,9 @@ void		create_woody(t_info *info)
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
 
+	// encrypt .text section
+	encryption(info, new_file);
+	
 	// write the file
 	// 	print_woody(new_file, info->file_size, "woody");
 	print_woody(new_file, new_file_size, "packer");
