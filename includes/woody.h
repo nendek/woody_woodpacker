@@ -20,6 +20,8 @@ typedef struct			s_funcs
 	int32_t		(*inject_loader)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
 // 	size_t		(*get_code_size)();
+	void		(*append_code)(t_info *, void *);
+	void		(*replace_jmploader)(t_info *, Elf64_Phdr *);
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR
@@ -31,6 +33,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	int32_t			nb_hp;
 	size_t			base_entry;
 	size_t			bss_size;
+	size_t			end_data_seg;
 	size_t			segment_text_header;
 	size_t			segment_data_header;
 
@@ -48,7 +51,6 @@ int32_t		get_elf64_zone(t_info *info);
 int32_t		get_elf32_zone(t_info *info);
 
 void		create_woody(t_info *info);
-Elf64_Phdr	*get_last_load(void *file);
 
 void		create_packer(t_info *info, void *new_file);
 

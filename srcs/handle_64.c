@@ -12,13 +12,66 @@ static char loader64[] =
 # define JMP64_SIZE sizeof(jmp64) - 1
 static char jmp64[] = "\xe9\xff\xff\xff\xff\xff\xff\xff\xff";
 
+# define WOODY_SIZE sizeof(woody64) - 1
+static char woody64[] = 
+"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\x48\x83\xc4\x10";
+
+# define JMPL_SIZE sizeof(jmploader) - 1
+static char jmploader[] = 
+"\xe9\xff\xff\xff\xff";
+
+static Elf64_Phdr	*get_last_load64(void *file)
+{
+	Elf64_Phdr	*program_header;
+
+	program_header = (Elf64_Phdr *)(file + sizeof(Elf64_Ehdr));
+	while (program_header->p_type != PT_LOAD)
+		program_header++;
+	while (program_header->p_type == PT_LOAD)
+		program_header++;
+	program_header--;
+	return (program_header);
+}
+
+static void		replace_jmploader64(t_info *info, Elf64_Phdr  *program_header)
+{
+	// adresse d'arrivee : offset_loader + la moitie (en dur = 0x24)
+	// adresse relative : adresse du jump - adresse courante
+	// adresse de depart : program_header->p_vaddr + + program_header->p_filesz + WOODY_SIZE - 1
+
+	size_t		depart;
+	size_t		arrive;
+	uint32_t	rel = 0;
+
+	depart = program_header->p_vaddr + program_header->p_memsz + WOODY_SIZE + ALIGN_APPEND;
+	arrive = info->offset_loader + 0x2e;
+	rel = (uint32_t)(arrive - depart);
+
+	ft_memcpy(jmploader + 1, &(rel), sizeof(uint32_t));
+}
+
+static void		append_code64(t_info *info, void *new_file)
+{
+	// add .bss section to the physical file : DO nothing, just jump the section
+
+	// append woody to the end of the .bss
+	ft_memcpy(new_file + info->offset_woody, woody64, WOODY_SIZE);
+
+	// edit jump shellcode
+	replace_jmploader64(info, new_file + info->segment_data_header);
+
+	// append jump to loader to the end of the woody shellcode
+	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmploader, JMPL_SIZE);
+
+}
+
 void				modify_loader(t_info *info)
 {
 	Elf64_Phdr	*header;
 	uint32_t	new_rel;
 	size_t		offset;
 
-	header = get_last_load(info->file);
+	header = get_last_load64(info->file);
 	offset = header->p_vaddr + header->p_memsz + (ALIGN_APPEND - 1) - info->offset_loader; //+ (info->offset_loader & 1);
 
 	// change first load : offset 31 dans le shellcode
@@ -109,6 +162,13 @@ int32_t				get_elf64_zone(t_info *info)
 	// set functions to 64 bit mode
 	info->funcs->inject_loader = &inject_loader64;
 	info->funcs->replace_headers = &replace_headers64;
+	info->funcs->replace_jmploader = &replace_jmploader64;
+	info->funcs->append_code = &append_code64;
+	
+	program_header = get_last_load64(info->file);
+	info->offset_woody = program_header->p_offset + program_header->p_memsz + ALIGN_APPEND;
+	info->woody_size = WOODY_SIZE + JMPL_SIZE;
+	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 
 	
 	header = (Elf64_Ehdr *)(info->file);
@@ -116,7 +176,7 @@ int32_t				get_elf64_zone(t_info *info)
 	// save usefull infos
 	info->nb_hp = header->e_phnum;
 	info->base_entry = header->e_entry;
-	program_header = get_last_load(info->file);
+	//program_header = get_last_load(info->file);
 	info->bss_size = program_header->p_memsz - program_header->p_filesz;
 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
 	info->loader_size = LOADER_SIZE + JMP64_SIZE;
