@@ -70,6 +70,7 @@ int		main(int argc, char **argv)
 	info->file_size = (size_t)buf.st_size;
 	if (get_vulnerable_zone(info, get_type(info->file)) == 0)
 		return (EXIT_FAILURE);
+	create_Key(info);
 	create_woody(info);
 	return (0);
 }

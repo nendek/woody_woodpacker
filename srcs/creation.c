@@ -10,22 +10,45 @@ void	print_woody(void *file, size_t size, char *name)
 	close(fd);
 }
 
+void		create_Key(t_info *info)
+{
+	struct timeval	time;
+
+	gettimeofday(&time, NULL);
+	srand(time.tv_usec);
+
+	info->Key = rand();
+}
+
+uint32_t	key_timing(uint32_t current_key)
+{
+	return (current_key - TIMING);
+}
+
 void		encryption(t_info *info, void *new_file)
 {
-	char		*text;
+	uint32_t	*text;
 	size_t		i;
+	int32_t		nb_laps;
+	uint32_t	key;
 	size_t		size_text;
 
-	i = 0;
 	size_text = info->offset_loader - info->base_entry;
-	text = (char *)(new_file + info->base_entry);
+	text = (uint32_t *)(new_file + info->base_entry);
 
-	while (i < size_text)
+	nb_laps = 0;
+	while (nb_laps < 1)
 	{
-		text[i] ^= 0x42;
-		i++;
+		i = 0;
+// 		key = key_timing(info->Key);
+		key = 0x40c433ba;
+		while ((i + 1)* 4 < size_text)
+		{
+			text[i] ^= key;
+			i++;
+		}
+		nb_laps++;
 	}
-
 }
 
 void		create_woody(t_info *info)
@@ -54,8 +77,6 @@ void		create_woody(t_info *info)
 	info->funcs->append_code(info, new_file);
 
 	// complete the file
-// 	dprintf(1, "total_size = %#lx\n", new_file_size);
-// 	dprintf(1, "dep new_file : %#lx || dep old_file : %#lx || size : %#lx\n", info->offset_woody + info->woody_size, end_data_seg, info->file_size - end_data_seg);
 	ft_memcpy(new_file + info->offset_woody + info->woody_size, info->file + info->end_data_seg, info->file_size - info->end_data_seg);
 
 	// replace headers to make them work with loader
@@ -63,9 +84,8 @@ void		create_woody(t_info *info)
 
 	// encrypt .text section
 	encryption(info, new_file);
-	
+
 	// write the file
-	// 	print_woody(new_file, info->file_size, "woody");
-	print_woody(new_file, new_file_size, "packer");
+	print_woody(new_file, new_file_size, "woody");
 	free(new_file);
 }

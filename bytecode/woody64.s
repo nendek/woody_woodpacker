@@ -33,13 +33,18 @@ mov ecx, DWORD [rsp] ; taille du .text
 mov edx, DWORD [rsp + 0x8] ; cle chiffrement
 lea rdi, [$ - 0x2E7C] ; debut du .text MODULABLE
 loop:
-	mov al, BYTE [rdi]
+	mov eax, DWORD [rdi]
 	xor rax, rdx
-	stosb
-	dec ecx
-	test ecx, ecx
-	jne loop
-
+	stosd
+	sub ecx, 4
+	cmp ecx, 0
+	jg loop
+;	mov al, BYTE [rdi]
+;	xor rax, rdx
+;	stosb
+;	dec ecx
+;	test ecx, ecx
+;	jne loop
 ; MPROTEC
 mov rdx, 0x5 ; EXEC | READ
 mov rsi, [rsp] ; taille du .text
