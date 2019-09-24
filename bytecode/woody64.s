@@ -22,7 +22,7 @@ mov [rsp], DWORD -1 ; taille du .text MODULABLE
 
 ; MPROTEC
 mov rdx, 0x3 ; WRITE | READ
-mov rsi, [rsp] ; taille du .text
+mov esi, DWORD [rsp] ; taille du .text
 add rsi, 0x1000 ; + une page
 lea rdi, [$ - 0x1] ; debut du .text MODULABLE
 and rdi, 0xFFFFFFFFFFFFF000
