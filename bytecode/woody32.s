@@ -16,4 +16,48 @@ mov ebx, 1
 mov eax, 4
 int 0x80
 
+mov [esp + 0xc], DWORD edi
+mov esi, edi
+add esi, 0x12345678 ; debut du.text MODULABLE
+mov [esp + 0x4], DWORD 0x42 ; cle de dechiffrement MODULABLE
+mov [esp], DWORD -1 ; taille du .text MODULABLE
+
+; MPROTEC
+mov edx, 0x3 ; WRITE | READ
+mov ecx, DWORD [esp] ; taille du .text
+add ecx, 0x1000 ; + une page
+mov ebx, esi ; debut du .text
+and ebx, 0xFFFFF000
+mov eax, 0x7d
+int 0x80
+
+mov [esp + 0x8], DWORD 0x37B4D3DD ; TIMING
+mov ebx, 8 ; NB_TIMING
+mov edx, DWORD [esp + 0x4] ; cle chiffrement
+loop2:
+	mov ecx, DWORD [esp]
+	mov edi, esi; debut du .text
+loop1:
+	mov eax, DWORD [edi]
+	xor eax, edx
+	stosd
+	sub ecx, 4
+	cmp ecx, 0
+	jg loop1
+
+	add edx, DWORD [esp + 0x8]
+	dec ebx
+	test ebx, ebx
+	jne loop2
+
+mov edx, 0x5 ; EXEC | READ
+mov ecx, DWORD [esp] ; taille du .text
+add ecx, 0x1000 ; + une page
+mov ebx, esi; debut du .text
+and ebx, 0xFFFFF000
+mov eax, 0x7d
+int 0x80
+
+mov edi, [esp + 0xc]
+
 add esp, 0x10

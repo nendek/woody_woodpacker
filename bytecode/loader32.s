@@ -14,7 +14,7 @@ p1:
 p2:
 	jmp 0x2e7c - (p2 - _start)
 
-	mov edx, 0x3; EXEC | READ
+	mov edx, 0x3; WRITE | READ
 	mov ecx, 0x105D; size shell code + 1 page, modulable (ou non ?)
 p3:
 	lea ebx, [edi + 0x2E7C - (p3 - _start)]

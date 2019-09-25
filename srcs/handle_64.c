@@ -44,6 +44,7 @@ static void		replace_jmploader64(t_info *info, void *program_header)
 	uint32_t	rel = 0;
 
 	depart = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
+	// TODO : 0x2e may change
 	arrive = info->offset_loader + 0x2e;
 	rel = (uint32_t)(arrive - depart);
 
@@ -60,7 +61,7 @@ static void		modify_woody(t_info *info, void *new_file)
 	offset = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz - info->base_entry;
 
 	// put size .text section
-	val = info->offset_loader - info->base_entry - 1;
+	val = info->offset_loader - info->base_entry - 4;
 	ft_memcpy(woody64 + 76, &(val), sizeof(uint32_t));
 
 	// put .text begin addr
@@ -209,7 +210,6 @@ int32_t				get_elf64_zone(t_info *info)
 	// save usefull infos
 	info->nb_hp = header->e_phnum;
 	info->base_entry = header->e_entry;
-	//program_header = get_last_load(info->file);
 	info->bss_size = program_header->p_memsz - program_header->p_filesz;
 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
 	info->loader_size = LOADER64_SIZE + JMP64_SIZE;
