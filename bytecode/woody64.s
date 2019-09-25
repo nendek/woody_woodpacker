@@ -29,16 +29,24 @@ and rdi, 0xFFFFFFFFFFFFF000
 mov rax, 0xa
 syscall
 
-mov ecx, DWORD [rsp] ; taille du .text
+mov r8, 0x37B4D3DD ; TIMING
+mov r9, 8 ; NB_TIMING MOODULABLE ?
 mov edx, DWORD [rsp + 0x8] ; cle chiffrement
-lea rdi, [$ - 0x2E7C] ; debut du .text MODULABLE
-loop:
+loop2:
+	mov ecx, DWORD [rsp] ; taille du .text
+	lea rdi, [$ - 0x2E7C] ; debut du .text MODULABLE
+loop1:
 	mov eax, DWORD [rdi]
 	xor rax, rdx
 	stosd
 	sub ecx, 4
 	cmp ecx, 0
-	jg loop
+	jg loop1
+
+	add edx, r8d
+	dec r9
+	test r9, r9
+	jne loop2
 ;	mov al, BYTE [rdi]
 ;	xor rax, rdx
 ;	stosb
@@ -47,7 +55,7 @@ loop:
 ;	jne loop
 ; MPROTEC
 mov rdx, 0x5 ; EXEC | READ
-mov rsi, [rsp] ; taille du .text
+mov esi, DWORD [rsp] ; taille du .text
 add rsi, 0x1000 ; + une page
 lea rdi, [$ - 0x1] ; debut du .text MODULABLE
 and rdi, 0xFFFFFFFFFFFFF000

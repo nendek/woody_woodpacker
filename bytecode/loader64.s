@@ -13,7 +13,7 @@ _start:
 	push r11
 	push r12
 	mov rdx, 0x5 ; EXEC | READ
-	mov rsi, 0x105D ; size shell code + 1 page, modulable (ou non ?)
+	mov rsi, 0x10B7 ; size shell code + 1 page, modulable (ou non ?)
 p1:
 	lea rdi, [$ + 0x2E7C - (p1 - _start)]
 	and rdi, 0xFFFFFFFFFFFFF000
@@ -24,7 +24,7 @@ p2:
 	jmp 0x2E7C - (p2 - _start)
 	
 	mov rdx, 0x3 ; WRITE | READ
-	mov rsi, 0x105D ; size shellcode + 1 page
+	mov rsi, 0x10B7 ; size shellcode + 1 page
 p3:
 	lea rdi, [$ + 0x2E7C - (p3 - _start)]
 	and rdi, 0xFFFFFFFFFFFFF000

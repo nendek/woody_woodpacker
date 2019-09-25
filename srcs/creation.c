@@ -20,11 +20,24 @@ void		create_Key(t_info *info)
 	info->Key = rand();
 }
 
+
 uint32_t	key_timing(uint32_t current_key)
 {
 	return (current_key - TIMING);
 }
 
+uint32_t	get_last_key(uint32_t master_Key)
+{
+	int			i;
+
+	i = 0;
+	while (i < NB_TIMING)
+	{
+		master_Key = key_timing(master_Key);
+		i++;
+	}
+	return (master_Key);
+}
 void		encryption(t_info *info, void *new_file)
 {
 	uint32_t	*text;
@@ -37,11 +50,12 @@ void		encryption(t_info *info, void *new_file)
 	text = (uint32_t *)(new_file + info->base_entry);
 
 	nb_laps = 0;
-	while (nb_laps < 1)
+	key = info->Key;
+	while (nb_laps < NB_TIMING)
 	{
 		i = 0;
-// 		key = key_timing(info->Key);
-		key = 0x40c433ba;
+		key = key_timing(key);
+// 		key = 0x40c433ba;
 		while ((i + 1)* 4 < size_text)
 		{
 			text[i] ^= key;
@@ -49,6 +63,7 @@ void		encryption(t_info *info, void *new_file)
 		}
 		nb_laps++;
 	}
+	dprintf(1, "key : %#x || last_key : %#x\n", key, get_last_key(info->Key));
 }
 
 void		create_woody(t_info *info)

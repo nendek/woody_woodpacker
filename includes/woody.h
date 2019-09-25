@@ -54,6 +54,7 @@ int32_t		get_elf64_zone(t_info *info);
 int32_t		get_elf32_zone(t_info *info);
 
 void		create_Key(t_info *info);
+uint32_t	get_last_key(uint32_t master_Key);
 void		create_woody(t_info *info);
 
 void		create_packer(t_info *info, void *new_file);
