@@ -110,7 +110,6 @@ static void		modify_loader(t_info *info)
 	header = get_last_load32(info->file);
 	offset = header->p_vaddr + header->p_memsz - 35 - info->offset_loader; //+ (info->offset_loader & 1);
 
-	(void)new_rel;
 	// change first load : offset 13 dans le shellcode
 	new_rel = offset;
 	ft_memcpy(loader32 + 13, &new_rel, sizeof(uint32_t));

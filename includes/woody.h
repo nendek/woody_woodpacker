@@ -13,6 +13,8 @@
 
 # define ELF_32 1
 # define ELF_64 2
+# define WOODY_BSS 1
+# define WOODY_PADDING 2
 # define NB_TIMING 8
 # define TIMING 0x37B4D3DD
 
@@ -30,6 +32,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 {
 	void			*file;
 	size_t			file_size;
+	int				injection_mode;
 
 	// base file info
 	int32_t			nb_hp;
@@ -56,6 +59,8 @@ int32_t		get_elf32_zone(t_info *info);
 void		create_Key(t_info *info);
 uint32_t	get_last_key(uint32_t master_Key);
 void		create_woody(t_info *info);
+
+void		inject_woody(t_info *info, void *new_file);
 
 void		create_packer(t_info *info, void *new_file);
 

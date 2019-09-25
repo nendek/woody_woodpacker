@@ -21,7 +21,7 @@ mov [rsp + 0x8], DWORD 0x42 ; cle de dechiffrement MODULABLE
 mov [rsp], DWORD -1 ; taille du .text MODULABLE
 
 ; MPROTEC
-mov rdx, 0x3 ; WRITE | READ
+mov rdx, 0x7 ; WRITE | READ | EXEC
 mov esi, DWORD [rsp] ; taille du .text
 add rsi, 0x1000 ; + une page
 lea rdi, [$ - 0x1] ; debut du .text MODULABLE

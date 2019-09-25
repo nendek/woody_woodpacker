@@ -14,7 +14,7 @@ static char jmp64[] = "\xe9\xff\xff\xff\xff\xff\xff\xff\xff";
 
 # define WOODY_SIZE sizeof(woody64) - 1
 static char woody64[] = 
-"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\xc7\x44\x24\x08\x42\x00\x00\x00\xc7\x04\x24\xff\xff\xff\xff\xba\x03\x00\x00\x00\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x41\xb8\xdd\xd3\xb4\x37\x41\xb9\x08\x00\x00\x00\x8b\x54\x24\x08\x8b\x0c\x24\x48\x8d\x3d\x7d\xd1\xff\xff\x8b\x07\x48\x31\xd0\xab\x83\xe9\x04\x83\xf9\x00\x7f\xf2\x44\x01\xc2\x49\xff\xc9\x4d\x85\xc9\x75\xdd\xba\x05\x00\x00\x00\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x48\x83\xc4\x10";
+"\x48\x31\xc0\x48\x31\xdb\x48\x31\xd2\x48\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\xb8\x01\x00\x00\x00\xbf\x01\x00\x00\x00\x48\x8d\x34\x24\x0f\x05\xc7\x44\x24\x08\x42\x00\x00\x00\xc7\x04\x24\xff\xff\xff\xff\xba\x07\x00\x00\x00\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x41\xb8\xdd\xd3\xb4\x37\x41\xb9\x08\x00\x00\x00\x8b\x54\x24\x08\x8b\x0c\x24\x48\x8d\x3d\x7d\xd1\xff\xff\x8b\x07\x48\x31\xd0\xab\x83\xe9\x04\x83\xf9\x00\x7f\xf2\x44\x01\xc2\x49\xff\xc9\x4d\x85\xc9\x75\xdd\xba\x05\x00\x00\x00\x8b\x34\x24\x48\x81\xc6\x00\x10\x00\x00\x48\x8d\x3d\xf8\xff\xff\xff\x48\x81\xe7\x00\xf0\xff\xff\xb8\x0a\x00\x00\x00\x0f\x05\x48\x83\xc4\x10";
 
 # define JMPL_SIZE sizeof(jmploader) - 1
 static char jmploader[] = 
@@ -44,6 +44,7 @@ static void		replace_jmploader64(t_info *info, void *program_header)
 	uint32_t	rel = 0;
 
 	depart = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
+	dprintf(1, "depart : %#lx\n", depart);
 	// TODO : 0x2e may change
 	arrive = info->offset_loader + 0x2e;
 	rel = (uint32_t)(arrive - depart);
@@ -59,6 +60,7 @@ static void		modify_woody(t_info *info, void *new_file)
 
 	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
 	offset = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz - info->base_entry;
+	dprintf(1, "offset : %#lx\n", offset);
 
 	// put size .text section
 	val = info->offset_loader - info->base_entry - 4;
@@ -73,12 +75,12 @@ static void		modify_woody(t_info *info, void *new_file)
 	ft_memcpy(woody64 + 138, &(val), sizeof(uint32_t));
 
 	// put .text begin addr again again
- 	val = - 189 - offset;
- 	ft_memcpy(woody64 + 185, &(val), sizeof(uint32_t));
+	val = - 189 - offset;
+	ft_memcpy(woody64 + 185, &(val), sizeof(uint32_t));
 
 	// put decryption key
- 	val = get_last_key(info->Key);
- 	ft_memcpy(woody64 + 69, &(val), sizeof(uint32_t));
+	val = get_last_key(info->Key);
+	ft_memcpy(woody64 + 69, &(val), sizeof(uint32_t));
 
 }
 
@@ -100,13 +102,28 @@ static void		append_code64(t_info *info, void *new_file)
 
 }
 
-static void				modify_loader(t_info *info)
+void			inject_woody(t_info *info, void *new_file)
+{
+	// edit shellcode with infos
+	modify_woody(info, info->file);
+
+	// copy it into file
+	ft_memcpy(new_file, woody64, WOODY_SIZE);
+
+	// edit jump shellcode
+	replace_jmploader64(info, info->file + info->segment_data_header);
+
+	// append jump to loader to the end of the woody shellcode
+	ft_memcpy(new_file + WOODY_SIZE, jmploader, JMPL_SIZE);
+}
+
+static void		modify_loader(t_info *info)
 {
 	Elf64_Phdr	*header;
 	uint32_t	new_rel;
 	size_t		offset;
 
-	header = get_last_load64(info->file);
+	header = (Elf64_Phdr *)(info->file + info->segment_data_header);
 	offset = header->p_vaddr + header->p_memsz - 1 - info->offset_loader; //+ (info->offset_loader & 1);
 
 	// change first load : offset 31 dans le shellcode
@@ -166,6 +183,28 @@ static void			replace_headers64(t_info *info, void *new_file)
 	program_header->p_memsz = program_header->p_filesz;
 }
 
+static void			get_mode(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
+{
+	program_header++;
+	nb_segment++;
+	while (nb_segment < info->nb_hp)
+	{
+		if (program_header->p_type == PT_LOAD)
+		{
+			if ((program_header->p_align - (program_header->p_filesz % program_header->p_align)) > WOODY_SIZE + JMPL_SIZE)
+			{
+				info->injection_mode = WOODY_PADDING;
+				info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
+				info->offset_woody = program_header->p_offset + program_header->p_memsz;
+				return ;
+			}
+		}
+		program_header++;
+		nb_segment++;
+	}
+	info->injection_mode = WOODY_BSS;
+}
+
 static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
 {
 	size_t		end_segment;
@@ -185,6 +224,8 @@ static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, i
 		return (0);
 	info->offset_loader = end_segment;
 	info->segment_text_header = (size_t)((size_t)program_header - (size_t)(info->file));
+
+	get_mode(info, program_header, nb_segment);
 	return (1);
 }
 
@@ -193,13 +234,13 @@ int32_t				get_elf64_zone(t_info *info)
 	Elf64_Ehdr *header;
 	Elf64_Phdr *program_header;
 	int			i;
-	
+
 	// set functions to 64 bit mode
 	info->funcs->inject_loader = &inject_loader64;
 	info->funcs->replace_headers = &replace_headers64;
 	info->funcs->replace_jmploader = &replace_jmploader64;
 	info->funcs->append_code = &append_code64;
-	
+
 	program_header = get_last_load64(info->file);
 	info->offset_woody = program_header->p_offset + program_header->p_memsz;
 	info->woody_size = WOODY_SIZE + JMPL_SIZE;
@@ -220,10 +261,8 @@ int32_t				get_elf64_zone(t_info *info)
 	while (i < info->nb_hp)
 	{
 		if (program_header->p_type == PT_LOAD)
-		{
 			if (save_place_to_inject(info, program_header, i) == 1)
 				return (1);
-		}
 		i++;
 		program_header++;
 	}
