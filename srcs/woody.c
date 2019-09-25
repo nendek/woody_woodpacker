@@ -72,5 +72,8 @@ int		main(int argc, char **argv)
 		return (EXIT_FAILURE);
 	create_Key(info);
 	create_woody(info);
+	dprintf(1, "%x\n", info->Key);
+	free(info->funcs);
+	free(info);
 	return (0);
 }

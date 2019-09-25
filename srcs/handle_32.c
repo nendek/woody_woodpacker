@@ -44,7 +44,6 @@ static void		replace_jmploader32(t_info *info, void *program_header)
 	uint32_t	rel = 0;
 
 	depart = ((Elf32_Phdr *)(program_header))->p_vaddr + ((Elf32_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
-	//TODO: 0x2E may change
 	arrive = info->offset_loader + 0x1e;
 	rel = (uint32_t)(arrive - depart);
 
@@ -146,6 +145,7 @@ static int32_t		inject_loader32(t_info *info, void *new_file)
 	ft_memcpy(inject, loader32, LOADER32_SIZE);
 	ft_memcpy(inject + LOADER32_SIZE, jmp32, JMP32_SIZE);
 	ft_memcpy(new_file, inject, info->loader_size);
+	free(inject);
 	return (1);
 }
 

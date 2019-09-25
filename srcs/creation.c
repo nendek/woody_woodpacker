@@ -55,7 +55,6 @@ void		encryption(t_info *info, void *new_file)
 	{
 		i = 0;
 		key = key_timing(key);
-// 		key = 0x40c433ba;
 		while ((i + 1)* 4 < size_text)
 		{
 			text[i] ^= key;
@@ -63,7 +62,6 @@ void		encryption(t_info *info, void *new_file)
 		}
 		nb_laps++;
 	}
-	dprintf(1, "key : %#x || last_key : %#x\n", key, get_last_key(info->Key));
 }
 
 void		create_woody(t_info *info)

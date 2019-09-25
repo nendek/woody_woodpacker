@@ -78,7 +78,6 @@ static void		modify_woody(t_info *info, void *new_file)
 
 	// put decryption key
  	val = get_last_key(info->Key);
-// 	val = 0x42;
  	ft_memcpy(woody64 + 69, &(val), sizeof(uint32_t));
 
 }
@@ -143,6 +142,7 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 	ft_memcpy(inject, loader64, LOADER64_SIZE);
 	ft_memcpy(inject + LOADER64_SIZE, jmp64, JMP64_SIZE);
 	ft_memcpy(new_file, inject, info->loader_size);
+	free(inject);
 	return (1);
 }
 
