@@ -15,8 +15,8 @@ static char jmp32[] =
 static char woody32[] = 
 "\x31\xc0\x31\xdb\x31\xd2\x83\xec\x10\xc7\x04\x24\x2e\x2e\x2e\x2e\xc7\x44\x24\x04\x57\x4f\x4f\x44\xc7\x44\x24\x08\x59\x2e\x2e\x2e\xc7\x44\x24\x0c\x2e\x0a\x00\x00\xba\x0e\x00\x00\x00\x8d\x0c\x24\xbb\x01\x00\x00\x00\xb8\x04\x00\x00\x00\xcd\x80\x89\x7c\x24\x0c\x89\xfe\x81\xc6\x78\x56\x34\x12\xc7\x44\x24\x04\x42\x00\x00\x00\xc7\x04\x24\xff\xff\xff\xff\xba\x03\x00\x00\x00\x8b\x0c\x24\x81\xc1\x00\x10\x00\x00\x89\xf3\x81\xe3\x00\xf0\xff\xff\xb8\x7d\x00\x00\x00\xcd\x80\xc7\x44\x24\x08\xdd\xd3\xb4\x37\xbb\x08\x00\x00\x00\x8b\x54\x24\x04\x8b\x0c\x24\x89\xf7\x8b\x07\x31\xd0\xab\x83\xe9\x04\x83\xf9\x00\x7f\xf3\x03\x54\x24\x08\x4b\x85\xdb\x75\xe5\xba\x05\x00\x00\x00\x8b\x0c\x24\x81\xc1\x00\x10\x00\x00\x89\xf3\x81\xe3\x00\xf0\xff\xff\xb8\x7d\x00\x00\x00\xcd\x80\x8b\x7c\x24\x0c\x83\xc4\x10";
 
-# define JMPL32_SIZE sizeof(jmpl32) - 1
-static char jmpl32[] =
+# define JMPEW_SIZE sizeof(jmp_end_woody) - 1
+static char jmp_end_woody[] =
 "\xe9\xff\xff\xff\xff";
 
 
@@ -47,7 +47,7 @@ static void		replace_jmploader32(t_info *info, void *program_header)
 	arrive = info->offset_loader + 0x1e;
 	rel = (uint32_t)(arrive - depart);
 
-	ft_memcpy(jmpl32 + 1, &(rel), sizeof(uint32_t));
+	ft_memcpy(jmp_end_woody + 1, &(rel), sizeof(uint32_t));
 }
 
 static void		modify_woody(t_info *info, void *new_file)
@@ -97,7 +97,7 @@ static void		append_code32(t_info *info, void *new_file)
 	replace_jmploader32(info, new_file + info->segment_data_header);
 
 	// append jump to loader to the end of the woody shellcode
-	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmpl32, JMP32_SIZE);
+	ft_memcpy(new_file + info->offset_woody + WOODY_SIZE, jmp_end_woody, JMP32_SIZE);
 
 }
 
@@ -199,7 +199,7 @@ int32_t				get_elf32_zone(t_info *info)
 	// set functions to 32 bit mode
 	info->funcs->inject_loader = &inject_loader32;
 	info->funcs->replace_headers = &replace_headers32;
-	info->funcs->replace_jmploader = &replace_jmploader32;
+	info->funcs->replace_jmp_end_woody = &replace_jmploader32;
 	info->funcs->append_code = &append_code32;
 
 	program_header = get_last_load32(info->file);

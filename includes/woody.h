@@ -15,6 +15,8 @@
 # define ELF_64 2
 # define WOODY_PADDING 1
 # define WOODY_BSS 2
+# define DOUBLE_PADDING 3
+# define DOUBLE_BSS 4
 # define NB_TIMING 8
 # define TIMING 0x37B4D3DD
 
@@ -25,7 +27,7 @@ typedef struct			s_funcs
 	int32_t		(*inject_loader)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
 	void		(*append_code)(t_info *, void *);
-	void		(*replace_jmploader)(t_info *, void *);
+	void		(*replace_jmp_end_woody)(t_info *, void *);
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR
@@ -37,6 +39,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	// base file info
 	int32_t			nb_hp;
 	size_t			base_entry;
+	size_t			text_size;
 	size_t			bss_size;
 	size_t			end_data_seg;
 	size_t			segment_text_header;
@@ -57,10 +60,13 @@ Elf64_Phdr  *get_last_load64(void *file);
 int32_t		get_elf32_zone(t_info *info);
 int32_t		get_case_1(t_info *info);
 int32_t		get_case_2(t_info *info);
+int32_t		get_case_3(t_info *info);
+
 
 		/* injection handler */
 void		create_woody(t_info *info);
 void		inject_woody(t_info *info, void *new_file);
+void		inject_woody_loader(t_info *info, void *new_file);
 
 
 		/* CRYPTO HANDLER */

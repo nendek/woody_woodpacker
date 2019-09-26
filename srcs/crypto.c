@@ -33,9 +33,7 @@ void			encryption(t_info *info, void *new_file)
 	size_t		i;
 	int32_t		nb_laps;
 	uint32_t	key;
-	size_t		size_text;
 
-	size_text = info->offset_loader - info->base_entry;
 	text = (uint32_t *)(new_file + info->base_entry);
 
 	nb_laps = 0;
@@ -44,7 +42,7 @@ void			encryption(t_info *info, void *new_file)
 	{
 		i = 0;
 		key = key_timing(key);
-		while ((i + 1)* 4 < size_text)
+		while ((i + 1)* 4 < info->text_size)
 		{
 			text[i] ^= key;
 			i++;
