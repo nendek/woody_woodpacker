@@ -116,3 +116,15 @@ int32_t		get_case_3(t_info *info)
 	}
 	return (1);
 }
+
+int32_t		get_case_4(t_info *info)
+{
+	Elf64_Phdr	*program_header;
+
+	program_header = get_last_load64(info->file);
+
+	info->offset_woody = program_header->p_offset + program_header->p_memsz;
+	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
+	info->offset_loader = info->offset_woody;
+	return (0);	
+}

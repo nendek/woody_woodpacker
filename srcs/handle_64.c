@@ -52,7 +52,6 @@ static void		replace_jmp_end_woody64(t_info *info, void *program_header)
 	uint32_t	rel = 0;
 
 	depart = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz + WOODY_SIZE;
-	// TODO : 0x2e may change
 	if (info->injection_mode == WOODY_PADDING || info->injection_mode == WOODY_BSS)
 		arrive = info->offset_loader + 0x2e;
 	else
@@ -146,8 +145,6 @@ void			inject_woody_loader(t_info *info, void *new_file)
 	replace_jmp_end_woody64(info, new_file + info->segment_data_header);
 	program_header->p_memsz -= PUSHALL_SIZE + POPALL_SIZE + JMPEW_SIZE;
 	ft_memcpy(new_file + info->offset_woody + PUSHALL_SIZE + WOODY_SIZE + POPALL_SIZE, jmp_end_woody, JMPEW_SIZE);
-
-	
 }
 
 static void		modify_loader(t_info *info)
@@ -157,7 +154,7 @@ static void		modify_loader(t_info *info)
 	size_t		offset;
 
 	header = (Elf64_Phdr *)(info->file + info->segment_data_header);
-	offset = header->p_vaddr + header->p_memsz - 1 - info->offset_loader; //+ (info->offset_loader & 1);
+	offset = header->p_vaddr + header->p_memsz - 1 - info->offset_loader;
 
 	// change first load : offset 31 dans le shellcode
 	new_rel = offset - 31;
@@ -217,18 +214,28 @@ static void			replace_headers64(t_info *info, void *new_file)
 	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
 	if (info->injection_mode == WOODY_BSS)
 	{
+// 		main_header->e_entry = program_header->p_vaddr + program_header->p_memsz;
 		program_header->p_filesz += info->bss_size + info->woody_size;
 		program_header->p_memsz = program_header->p_filesz;
 	}
 	else if (info->injection_mode == WOODY_PADDING)
 	{
+// 		main_header->e_entry = program_header->p_vaddr + program_header->p_filesz;
 		program_header->p_filesz += info->woody_size;
 		program_header->p_memsz += info->woody_size;
 	}
 	else if (info->injection_mode == DOUBLE_PADDING)
 	{
+// 		main_header->e_entry = program_header->p_vaddr + program_header->p_filesz;
 		program_header->p_filesz += info->woody_size + PUSHALL_SIZE + POPALL_SIZE;
 		program_header->p_memsz += info->woody_size + PUSHALL_SIZE + POPALL_SIZE;
+		program_header->p_flags |= PF_X;
+	}
+	else
+	{
+		main_header->e_entry = program_header->p_vaddr + program_header->p_memsz;
+		program_header->p_filesz += info->bss_size + info->woody_size;
+		program_header->p_memsz = program_header->p_filesz;
 		program_header->p_flags |= PF_X;
 	}
 }
@@ -272,12 +279,6 @@ int32_t				get_elf64_zone(t_info *info)
 	info->loader_size = LOADER64_SIZE + JMP64_SIZE;
 	info->woody_size = WOODY_SIZE + JMPEW_SIZE;
 
-// 	info->offset_woody = program_header->p_offset + program_header->p_memsz;
-// 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
-//	offset_loader 
-//	segment_text_header
-
-
 	if (get_case_1(info) == 0)
 	{
 		info->injection_mode = WOODY_PADDING;
@@ -293,7 +294,10 @@ int32_t				get_elf64_zone(t_info *info)
 		info->injection_mode = DOUBLE_PADDING;
 		return (0);
 	}
-// 	if (get_case_4(info) == 0)
-// 		return (0);
+	if (get_case_4(info) == 0)
+	{
+		info->injection_mode = DOUBLE_BSS;
+		return (0);
+	}
 	return (1);
 }

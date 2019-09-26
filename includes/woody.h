@@ -61,6 +61,7 @@ int32_t		get_elf32_zone(t_info *info);
 int32_t		get_case_1(t_info *info);
 int32_t		get_case_2(t_info *info);
 int32_t		get_case_3(t_info *info);
+int32_t		get_case_4(t_info *info);
 
 
 		/* injection handler */
