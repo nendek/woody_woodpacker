@@ -68,7 +68,7 @@ int		main(int argc, char **argv)
 	if ((info->file = mmap(0, (size_t)buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
 		return (EXIT_FAILURE);
 	info->file_size = (size_t)buf.st_size;
-	if (get_vulnerable_zone(info, get_type(info->file)) == 0)
+	if (get_vulnerable_zone(info, get_type(info->file)) == 1)
 		return (EXIT_FAILURE);
 	create_Key(info);
 	create_woody(info);

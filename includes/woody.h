@@ -13,8 +13,8 @@
 
 # define ELF_32 1
 # define ELF_64 2
-# define WOODY_BSS 1
-# define WOODY_PADDING 2
+# define WOODY_PADDING 1
+# define WOODY_BSS 2
 # define NB_TIMING 8
 # define TIMING 0x37B4D3DD
 
@@ -51,18 +51,23 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	t_funcs			*funcs;
 
 };
-
+		/* parsing_files */
 int32_t		get_elf64_zone(t_info *info);
-
+Elf64_Phdr  *get_last_load64(void *file);
 int32_t		get_elf32_zone(t_info *info);
+int32_t		get_case_1(t_info *info);
+int32_t		get_case_2(t_info *info);
 
-void		create_Key(t_info *info);
-uint32_t	get_last_key(uint32_t master_Key);
+		/* injection handler */
 void		create_woody(t_info *info);
-
 void		inject_woody(t_info *info, void *new_file);
 
-void		create_packer(t_info *info, void *new_file);
+
+		/* CRYPTO HANDLER */
+void		create_Key(t_info *info);
+uint32_t	get_last_key(uint32_t master_Key);
+void		encryption(t_info *info, void *file);
+
 
 		/* LIBFT_HANDLER */
 void    ft_memcpy(void *dest, void *src, size_t size);

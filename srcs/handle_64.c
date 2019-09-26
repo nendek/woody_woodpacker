@@ -20,7 +20,7 @@ static char woody64[] =
 static char jmploader[] = 
 "\xe9\xff\xff\xff\xff";
 
-static Elf64_Phdr	*get_last_load64(void *file)
+Elf64_Phdr		*get_last_load64(void *file)
 {
 	Elf64_Phdr	*program_header;
 
@@ -183,58 +183,12 @@ static void			replace_headers64(t_info *info, void *new_file)
 	program_header->p_memsz = program_header->p_filesz;
 }
 
-static void			get_mode(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
-{
-	program_header++;
-	nb_segment++;
-	while (nb_segment < info->nb_hp)
-	{
-		if (program_header->p_type == PT_LOAD)
-		{
-			if ((program_header->p_align - (program_header->p_filesz % program_header->p_align)) > WOODY_SIZE + JMPL_SIZE)
-			{
-				info->injection_mode = WOODY_PADDING;
-				info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
-				info->offset_woody = program_header->p_offset + program_header->p_memsz;
-				return ;
-			}
-		}
-		program_header++;
-		nb_segment++;
-	}
-	info->injection_mode = WOODY_BSS;
-}
-
-static int32_t		save_place_to_inject(t_info *info, Elf64_Phdr *program_header, int32_t nb_segment)
-{
-	size_t		end_segment;
-	size_t		start_next_segment;
-
-	if (nb_segment >= info->nb_hp - 1)
-	{
-		dprintf(2, "ERROR during space searching : segment PT_LOAD is last segment\n");
-		return (0);
-	}
-	if ((program_header->p_flags & PF_X) != PF_X)
-		return (0);
-
-	end_segment = program_header->p_offset + program_header->p_filesz;
-	start_next_segment = (program_header + 1)->p_offset;
-	if (start_next_segment - end_segment < info->loader_size)
-		return (0);
-	info->offset_loader = end_segment;
-	info->segment_text_header = (size_t)((size_t)program_header - (size_t)(info->file));
-
-	get_mode(info, program_header, nb_segment);
-	return (1);
-}
-
 int32_t				get_elf64_zone(t_info *info)
 {
 	Elf64_Ehdr *header;
 	Elf64_Phdr *program_header;
-	int			i;
 
+	header = (Elf64_Ehdr *)(info->file);
 	// set functions to 64 bit mode
 	info->funcs->inject_loader = &inject_loader64;
 	info->funcs->replace_headers = &replace_headers64;
@@ -242,29 +196,33 @@ int32_t				get_elf64_zone(t_info *info)
 	info->funcs->append_code = &append_code64;
 
 	program_header = get_last_load64(info->file);
-	info->offset_woody = program_header->p_offset + program_header->p_memsz;
-	info->woody_size = WOODY_SIZE + JMPL_SIZE;
-	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
-
-	header = (Elf64_Ehdr *)(info->file);
-
 	// save usefull infos
 	info->nb_hp = header->e_phnum;
 	info->base_entry = header->e_entry;
 	info->bss_size = program_header->p_memsz - program_header->p_filesz;
-	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
+	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 	info->loader_size = LOADER64_SIZE + JMP64_SIZE;
+	info->woody_size = WOODY_SIZE + JMPL_SIZE;
 
-	// get zone to inject loader and save offset_loader and segment_text_header
-	program_header = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
-	i = 0;
-	while (i < info->nb_hp)
+// 	info->offset_woody = program_header->p_offset + program_header->p_memsz;
+// 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
+//	offset_loader 
+//	segment_text_header
+
+
+// 	if (get_case_1(info) == 0)
+// 	{
+// 		info->injection_mode = WOODY_PADDING;
+// 		return (0);
+// 	}
+	if (get_case_2(info) == 0)
 	{
-		if (program_header->p_type == PT_LOAD)
-			if (save_place_to_inject(info, program_header, i) == 1)
-				return (1);
-		i++;
-		program_header++;
+		info->injection_mode = WOODY_BSS;
+		return (0);
 	}
-	return (0);
+// 	if (get_case_3(info) == 0)
+// 		return (0);
+// 	if (get_case_4(info) == 0)
+// 		return (0);
+	return (1);
 }
