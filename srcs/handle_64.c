@@ -179,8 +179,16 @@ static void			replace_headers64(t_info *info, void *new_file)
 
 	// second part : replace_headers for woody
 	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
-	program_header->p_filesz += info->bss_size + info->woody_size;
-	program_header->p_memsz = program_header->p_filesz;
+	if (info->injection_mode == WOODY_BSS)
+	{
+		program_header->p_filesz += info->bss_size + info->woody_size;
+		program_header->p_memsz = program_header->p_filesz;
+	}
+	else if (info->injection_mode == WOODY_PADDING)
+	{
+		program_header->p_filesz += info->woody_size;
+		program_header->p_memsz += info->woody_size;
+	}
 }
 
 int32_t				get_elf64_zone(t_info *info)
@@ -210,11 +218,11 @@ int32_t				get_elf64_zone(t_info *info)
 //	segment_text_header
 
 
-// 	if (get_case_1(info) == 0)
-// 	{
-// 		info->injection_mode = WOODY_PADDING;
-// 		return (0);
-// 	}
+	if (get_case_1(info) == 0)
+	{
+		info->injection_mode = WOODY_PADDING;
+		return (0);
+	}
 	if (get_case_2(info) == 0)
 	{
 		info->injection_mode = WOODY_BSS;
