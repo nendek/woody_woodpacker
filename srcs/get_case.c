@@ -1,6 +1,34 @@
 #include "woody.h"
 
-static size_t		get_padding_size(Elf64_Phdr *program_header) { return (program_header->p_align - (program_header->p_filesz % program_header->p_align)); }
+// static size_t		get_padding_size(Elf64_Phdr *program_header) { return (program_header->p_align - (program_header->p_filesz % program_header->p_align)); }
+static size_t       get_padding_size(t_info *info, Elf64_Phdr *program_header) 
+{
+    Elf64_Phdr  *crawler;
+    int32_t     i;  
+    size_t      next_offset;
+    int32_t     found;
+
+    next_offset = -1; 
+    crawler = (Elf64_Phdr *)(info->file + sizeof(Elf64_Ehdr));
+    i = 0;
+    found = 0;
+    while (i < info->nb_hp)
+    {   
+        if ((crawler != program_header) && (crawler->p_offset > program_header->p_offset + program_header->p_filesz))
+        {   
+            if (next_offset > crawler->p_offset)
+            {   
+                next_offset = crawler->p_offset;
+                found = 1;
+            }   
+        }   
+        i++;
+        crawler++;
+    }   
+    if (found == 0)
+        return (0);
+    return (next_offset - (program_header->p_offset + program_header->p_filesz));
+}
 
 static int32_t		save_place_bss(t_info *info)
 {
@@ -20,7 +48,7 @@ static int32_t		save_place_padding(t_info *info, Elf64_Phdr *program_header, int
 	{
 		if (program_header->p_type == PT_LOAD)
 		{
-			if (get_padding_size(program_header) > info->woody_size)
+			if (get_padding_size(info, program_header) > info->woody_size)
 			{
 				info->offset_woody = program_header->p_offset + program_header->p_filesz;
 				info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
@@ -36,7 +64,7 @@ static int32_t		save_place_padding(t_info *info, Elf64_Phdr *program_header, int
 static int32_t		save_place_3(t_info *info, Elf64_Phdr *program_header)
 {
 
-	if (get_padding_size(program_header) < info->woody_size + (15 * 2)) // TODO : get define 15 = push all size
+	if (get_padding_size(info, program_header) < info->woody_size + (15 * 2)) // TODO : get define 15 = push all size
 		return (1);
 	if (program_header == get_last_load64(info->file))
 		return (1);
@@ -52,7 +80,7 @@ static int32_t		save_place_text(t_info *info, Elf64_Phdr *program_header)
 	// check segment is Executable
 	if ((program_header->p_flags & PF_X) != PF_X)
 		return (1);
-	if (get_padding_size(program_header) < info->loader_size)
+	if (get_padding_size(info, program_header) < info->loader_size)
 		return (1);
 
 	info->offset_loader = program_header->p_offset + program_header->p_filesz;
