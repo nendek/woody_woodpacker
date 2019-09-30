@@ -33,7 +33,7 @@ void		handle_case1(t_info *info)
 
 	// inject woody
 	// TODO : make it pointer to funcs
-	inject_woody(info, new_file + info->offset_woody_file);
+	info->funcs->inject_woody(info, new_file + info->offset_woody_file);
 
 	// complete the file
 	ft_memcpy(new_file + info->offset_woody_file + info->woody_size, info->file + info->offset_woody_file + info->woody_size, info->file_size - (info->offset_woody_file + info->woody_size));
@@ -42,7 +42,7 @@ void		handle_case1(t_info *info)
 	info->funcs->replace_headers(info, new_file);
 
 	// encrypt .text section
-	encryption(info, new_file);
+	info->funcs->encryption(info, new_file);
 
 	// write the file
 	print_woody(new_file, new_file_size, "woody");
@@ -80,7 +80,7 @@ void		handle_case2(t_info *info)
 	info->funcs->replace_headers(info, new_file);
 
 	// encrypt .text section
-	encryption(info, new_file);
+	info->funcs->encryption(info, new_file);
 
 	// write the file
 	print_woody(new_file, new_file_size, "woody");
@@ -102,16 +102,16 @@ void		handle_case3(t_info *info)
 	ft_memcpy(new_file, info->file, info->offset_woody_file);
 
 	// inject woody_loader
-	append_woody_loader(info, new_file);
+	info->funcs->append_woody_loader(info, new_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (15 * 2), info->file + info->offset_woody_file + info->woody_size + (15 * 2), new_file_size - (info->offset_woody_file + info->woody_size + (15 * 2)));
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (info->push_size * 2), info->file + info->offset_woody_file + info->woody_size + (info->push_size * 2), new_file_size - (info->offset_woody_file + info->woody_size + (info->push_size * 2)));
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
 
 	// encrypt .text section
-	encryption(info, new_file);
+	info->funcs->encryption(info, new_file);
 
 	// write the file
 	print_woody(new_file, new_file_size, "woody");
@@ -124,7 +124,7 @@ void		handle_case4(t_info *info)
 	size_t		new_file_size;
 
 	// create and init new_file
-	new_file_size = info->file_size + info->bss_size + info->woody_size + (15 * 2);
+	new_file_size = info->file_size + info->bss_size + info->woody_size + (info->push_size * 2);
 	if (!(new_file = malloc(new_file_size)))
 		return ;
 	ft_bzero(new_file, new_file_size);
@@ -133,16 +133,16 @@ void		handle_case4(t_info *info)
 	ft_memcpy(new_file, info->file, info->end_data_seg);
 
 	// inject woody_loader
-	append_woody_loader(info, new_file);
+	info->funcs->append_woody_loader(info, new_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (15 * 2), info->file + info->end_data_seg, new_file_size - (info->offset_woody_file + info->woody_size + (15 * 2)));
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (info->push_size * 2), info->file + info->end_data_seg, new_file_size - (info->offset_woody_file + info->woody_size + (info->push_size * 2)));
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
 
 	// encrypt .text section
-	encryption(info, new_file);
+	info->funcs->encryption(info, new_file);
 
 	// write the file
 	print_woody(new_file, new_file_size, "woody");
@@ -151,7 +151,7 @@ void		handle_case4(t_info *info)
 
 void		create_woody(t_info *info)
 {
-// 	dprintf(1, "mode : %#x\n", info->injection_mode);
+	dprintf(1, "mode : %#x\n", info->injection_mode);
 
 	if (info->injection_mode == WOODY_PADDING)
 		handle_case1(info);

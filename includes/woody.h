@@ -27,7 +27,10 @@ typedef struct			s_funcs
 	int32_t		(*inject_loader)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
 	void		(*append_woody)(t_info *, void *);
+	void		(*inject_woody)(t_info *, void *);
+	void		(*append_woody_loader)(t_info *, void *);
 	void		(*replace_jmp_end_woody)(t_info *);
+	void		(*encryption)(t_info *, void *);
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR
@@ -52,6 +55,7 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			offset_woody_file;
 	size_t			offset_woody_mem;
 	size_t			woody_size;
+	size_t			push_size;
 	uint32_t		Key;
 	t_funcs			*funcs;
 
@@ -60,10 +64,16 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 int32_t		get_elf64_zone(t_info *info);
 Elf64_Phdr  *get_last_load64(void *file);
 int32_t		get_elf32_zone(t_info *info);
-int32_t		get_case_1(t_info *info);
-int32_t		get_case_2(t_info *info);
-int32_t		get_case_3(t_info *info);
-int32_t		get_case_4(t_info *info);
+int32_t		get_case64_1(t_info *info);
+int32_t		get_case64_2(t_info *info);
+int32_t		get_case64_3(t_info *info);
+int32_t		get_case64_4(t_info *info);
+
+Elf32_Phdr  *get_last_load32(void *file);
+int32_t		get_case32_1(t_info *info);
+int32_t		get_case32_2(t_info *info);
+int32_t		get_case32_3(t_info *info);
+int32_t		get_case32_4(t_info *info);
 
 
 		/* injection handler */
@@ -75,7 +85,8 @@ void		append_woody_loader(t_info *info, void *new_file);
 		/* CRYPTO HANDLER */
 void		create_Key(t_info *info);
 uint32_t	get_last_key(uint32_t master_Key);
-void		encryption(t_info *info, void *file);
+void		encryption64(t_info *info, void *file);
+void		encryption32(t_info *info, void *file);
 
 
 		/* LIBFT_HANDLER */

@@ -17,13 +17,14 @@ mov eax, 4
 int 0x80
 
 mov [esp + 0xc], DWORD edi
+call get_eip
 mov esi, edi
 add esi, 0x12345678 ; debut du.text MODULABLE
 mov [esp + 0x4], DWORD 0x42 ; cle de dechiffrement MODULABLE
 mov [esp], DWORD -1 ; taille du .text MODULABLE
 
 ; MPROTEC
-mov edx, 0x3 ; WRITE | READ
+mov edx, 0x7 ; WRITE | READ
 mov ecx, DWORD [esp] ; taille du .text
 add ecx, 0x1000 ; + une page
 mov ebx, esi ; debut du .text
@@ -50,7 +51,7 @@ loop1:
 	test ebx, ebx
 	jne loop2
 
-mov edx, 0x5 ; EXEC | READ
+mov edx, 0x7 ; EXEC | READ
 mov ecx, DWORD [esp] ; taille du .text
 add ecx, 0x1000 ; + une page
 mov ebx, esi; debut du .text
@@ -61,3 +62,9 @@ int 0x80
 mov edi, [esp + 0xc]
 
 add esp, 0x10
+jmp end
+
+get_eip:
+	mov edi, [esp]
+	ret
+end:

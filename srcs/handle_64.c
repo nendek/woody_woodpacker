@@ -63,12 +63,9 @@ static void		replace_jmp_end_woody64(t_info *info)
 
 static void		modify_woody(t_info *info)
 {
-// 	Elf64_Phdr	*program_header;
 	size_t		offset;
 	size_t		val;
 
-// 	program_header = (Elf64_Phdr *)(new_file + info->segment_data_header);
-// 	offset = ((Elf64_Phdr *)(program_header))->p_vaddr + ((Elf64_Phdr *)(program_header))->p_memsz - info->base_entry;
 	offset = info->offset_woody_mem - info->base_entry;
 
 	// put size .text section
@@ -111,7 +108,7 @@ static void		append_woody64(t_info *info, void *new_file)
 
 }
 
-void			inject_woody(t_info *info, void *new_file)
+void			inject_woody64(t_info *info, void *new_file)
 {
 	// edit shellcode with infos
 	modify_woody(info);
@@ -126,7 +123,7 @@ void			inject_woody(t_info *info, void *new_file)
 	ft_memcpy(new_file + WOODY_SIZE, jmp_end_woody, JMPEW_SIZE);
 }
 
-void			append_woody_loader(t_info *info, void *new_file)
+void			append_woody_loader64(t_info *info, void *new_file)
 {
 	info->offset_woody_mem += PUSHALL_SIZE;
 	modify_woody(info);
@@ -236,7 +233,7 @@ static void			replace_headers64(t_info *info, void *new_file)
 	}
 }
 
-size_t				get_text_size(t_info *info)
+static size_t				get_text_size(t_info *info)
 {
     Elf64_Phdr  *program_header;
 	program_header = (Elf64_Phdr *)(info->file + info->segment_text_header);
@@ -244,7 +241,7 @@ size_t				get_text_size(t_info *info)
     return (program_header->p_vaddr + program_header->p_filesz - info->base_entry);
 }
 
-size_t				get_text_segment(t_info *info)
+static size_t				get_text_segment(t_info *info)
 {
 	Elf64_Phdr	*header;
 	int32_t		i;
@@ -271,9 +268,12 @@ int32_t				get_elf64_zone(t_info *info)
 	header = (Elf64_Ehdr *)(info->file);
 	// set functions to 64 bit mode
 	info->funcs->inject_loader = &inject_loader64;
+	info->funcs->inject_woody = &inject_woody64;
 	info->funcs->replace_headers = &replace_headers64;
 	info->funcs->replace_jmp_end_woody = &replace_jmp_end_woody64;
 	info->funcs->append_woody = &append_woody64;
+	info->funcs->append_woody_loader = &append_woody_loader64;
+	info->funcs->encryption = &encryption64;
 
 	program_header = get_last_load64(info->file);
 	// save usefull infos
@@ -285,23 +285,24 @@ int32_t				get_elf64_zone(t_info *info)
 	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 	info->loader_size = LOADER64_SIZE + JMP64_SIZE;
 	info->woody_size = WOODY_SIZE + JMPEW_SIZE;
+	info->push_size = PUSHALL_SIZE;
 
-	if (get_case_1(info) == 0)
+	if (get_case64_1(info) == 0)
 	{
 		info->injection_mode = WOODY_PADDING;
 		return (0);
 	}
-	if (get_case_2(info) == 0)
+	if (get_case64_2(info) == 0)
 	{
 		info->injection_mode = WOODY_BSS;
 		return (0);
 	}
-	if (get_case_3(info) == 0)
+	if (get_case64_3(info) == 0)
 	{
 		info->injection_mode = DOUBLE_PADDING;
 		return (0);
 	}
-	if (get_case_4(info) == 0)
+	if (get_case64_4(info) == 0)
 	{
 		info->injection_mode = DOUBLE_BSS;
 		return (0);
