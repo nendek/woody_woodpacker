@@ -22,21 +22,21 @@ void		handle_case1(t_info *info)
 	ft_bzero(new_file, new_file_size);
 
 	// recopy headers and .text of the original file
-	ft_memcpy(new_file, info->file, info->offset_loader);
+	ft_memcpy(new_file, info->file, info->offset_loader_file);
 
 	// add the loader code
-	if ((info->funcs->inject_loader(info, new_file + info->offset_loader)) == 0)
+	if ((info->funcs->inject_loader(info, new_file + info->offset_loader_file)) == 0)
 		return ;
 
 	// recopy file until woody_injection
-	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->offset_woody - (info->offset_loader + info->loader_size));
+	ft_memcpy(new_file + info->offset_loader_file + info->loader_size, info->file + info->offset_loader_file + info->loader_size, info->offset_woody_file - (info->offset_loader_file + info->loader_size));
 
 	// inject woody
 	// TODO : make it pointer to funcs
-	inject_woody(info, new_file + info->offset_woody);
+	inject_woody(info, new_file + info->offset_woody_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody + info->woody_size, info->file + info->offset_woody + info->woody_size, info->file_size - (info->offset_woody + info->woody_size));
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size, info->file + info->offset_woody_file + info->woody_size, info->file_size - (info->offset_woody_file + info->woody_size));
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
@@ -61,20 +61,20 @@ void		handle_case2(t_info *info)
 	ft_bzero(new_file, new_file_size);
 
 	// recopy headers and .text of the original file
-	ft_memcpy(new_file, info->file, info->offset_loader);
+	ft_memcpy(new_file, info->file, info->offset_loader_file);
 
 	// add the loader code
-	if ((info->funcs->inject_loader(info, new_file + info->offset_loader)) == 0)
+	if ((info->funcs->inject_loader(info, new_file + info->offset_loader_file)) == 0)
 		return ;
 
 	// add the rest of the file until end .data
-	ft_memcpy(new_file + info->offset_loader + info->loader_size, info->file + info->offset_loader + info->loader_size, info->end_data_seg - (info->offset_loader + info->loader_size));
+	ft_memcpy(new_file + info->offset_loader_file + info->loader_size, info->file + info->offset_loader_file + info->loader_size, info->end_data_seg - (info->offset_loader_file + info->loader_size));
 
 	// add the .bss and the dechiffreur
 	info->funcs->append_code(info, new_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody + info->woody_size, info->file + info->end_data_seg, info->file_size - info->end_data_seg);
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size, info->file + info->end_data_seg, info->file_size - info->end_data_seg);
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
@@ -99,13 +99,13 @@ void		handle_case3(t_info *info)
 	ft_bzero(new_file, new_file_size);
 
 	// recopy headers and .text of the original file
-	ft_memcpy(new_file, info->file, info->offset_woody);
+	ft_memcpy(new_file, info->file, info->offset_woody_file);
 
 	// inject woody_loader
 	inject_woody_loader(info, new_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody + info->woody_size + (15 * 2), info->file + info->offset_woody + info->woody_size + (15 * 2), new_file_size - (info->offset_woody + info->woody_size + (15 * 2)));
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (15 * 2), info->file + info->offset_woody_file + info->woody_size + (15 * 2), new_file_size - (info->offset_woody_file + info->woody_size + (15 * 2)));
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);
@@ -136,7 +136,7 @@ void		handle_case4(t_info *info)
 	inject_woody_loader(info, new_file);
 
 	// complete the file
-	ft_memcpy(new_file + info->offset_woody + info->woody_size + (15 * 2), info->file + info->end_data_seg, new_file_size - (info->offset_woody + info->woody_size + (15 * 2)));
+	ft_memcpy(new_file + info->offset_woody_file + info->woody_size + (15 * 2), info->file + info->end_data_seg, new_file_size - (info->offset_woody_file + info->woody_size + (15 * 2)));
 
 	// replace headers to make them work with loader
 	info->funcs->replace_headers(info, new_file);

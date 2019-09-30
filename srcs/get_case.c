@@ -36,7 +36,8 @@ static int32_t		save_place_bss(t_info *info)
 
 	header = get_last_load64(info->file);
 	info->segment_data_header = (size_t)header - (size_t)(info->file);
-	info->offset_woody = header->p_offset + header->p_memsz;
+	info->offset_woody_file = header->p_offset + header->p_memsz;
+	info->offset_woody_mem = header->p_vaddr + header->p_memsz;
 	return (0);
 }
 
@@ -50,7 +51,8 @@ static int32_t		save_place_padding(t_info *info, Elf64_Phdr *program_header, int
 		{
 			if (get_padding_size(info, program_header) > info->woody_size)
 			{
-				info->offset_woody = program_header->p_offset + program_header->p_filesz;
+				info->offset_woody_file = program_header->p_offset + program_header->p_filesz;
+				info->offset_woody_mem = program_header->p_vaddr + program_header->p_filesz;
 				info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
 				return (0);
 			}
@@ -69,9 +71,11 @@ static int32_t		save_place_3(t_info *info, Elf64_Phdr *program_header)
 	if (program_header == get_last_load64(info->file))
 		return (1);
 	
-	info->offset_woody = program_header->p_offset + program_header->p_memsz;
+	info->offset_woody_file = program_header->p_offset + program_header->p_filesz;
+	info->offset_woody_mem = program_header->p_vaddr + program_header->p_filesz;
 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
-	info->offset_loader = info->offset_woody;
+	info->offset_loader_file = program_header->p_offset + program_header->p_filesz;
+	info->offset_loader_mem = program_header->p_vaddr + program_header->p_filesz;
 	return (0);
 }
 
@@ -83,8 +87,8 @@ static int32_t		save_place_text(t_info *info, Elf64_Phdr *program_header)
 	if (get_padding_size(info, program_header) < info->loader_size)
 		return (1);
 
-	info->offset_loader = program_header->p_offset + program_header->p_filesz;
-	info->segment_text_header = (size_t)((size_t)program_header - (size_t)(info->file));
+	info->offset_loader_file = program_header->p_offset + program_header->p_filesz;
+	info->offset_loader_mem = program_header->p_vaddr + program_header->p_filesz;
 	return (0);
 }
 
@@ -151,8 +155,10 @@ int32_t		get_case_4(t_info *info)
 
 	program_header = get_last_load64(info->file);
 
-	info->offset_woody = program_header->p_offset + program_header->p_memsz;
+	info->offset_woody_file = program_header->p_offset + program_header->p_memsz;
+	info->offset_woody_mem = program_header->p_vaddr + program_header->p_memsz;
 	info->segment_data_header = (size_t)((size_t)program_header - (size_t)(info->file));
-	info->offset_loader = info->offset_woody;
+	info->offset_loader_file = program_header->p_offset + program_header->p_memsz;
+	info->offset_loader_mem = program_header->p_vaddr + program_header->p_memsz;
 	return (0);	
 }

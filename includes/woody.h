@@ -46,9 +46,11 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 	size_t			segment_data_header;
 
 	// packer file info
-	size_t			offset_loader;
+	size_t			offset_loader_file;
+	size_t			offset_loader_mem;
 	size_t			loader_size;
-	size_t			offset_woody;
+	size_t			offset_woody_file;
+	size_t			offset_woody_mem;
 	size_t			woody_size;
 	uint32_t		Key;
 	t_funcs			*funcs;
