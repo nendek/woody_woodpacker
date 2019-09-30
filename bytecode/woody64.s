@@ -54,7 +54,7 @@ loop1:
 ;	test ecx, ecx
 ;	jne loop
 ; MPROTEC
-mov rdx, 0x5 ; EXEC | READ
+mov rdx, 0x7 ; WRITE | EXEC | READ
 mov esi, DWORD [rsp] ; taille du .text
 add rsi, 0x1000 ; + une page
 lea rdi, [$ - 0x1] ; debut du .text MODULABLE

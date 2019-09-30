@@ -29,12 +29,14 @@ uint32_t		get_last_key(uint32_t master_Key)
 }
 void			encryption(t_info *info, void *new_file)
 {
+	Elf64_Phdr	*header;
 	uint32_t	*text;
 	size_t		i;
 	int32_t		nb_laps;
 	uint32_t	key;
 
-	text = (uint32_t *)(new_file + info->base_entry);
+	header = (Elf64_Phdr *)(info->file + info->segment_text_header);
+	text = (uint32_t *)(new_file + info->base_entry - (header->p_vaddr - header->p_offset));
 
 	nb_laps = 0;
 	key = info->Key;

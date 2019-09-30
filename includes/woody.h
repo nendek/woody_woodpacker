@@ -26,8 +26,8 @@ typedef struct			s_funcs
 {
 	int32_t		(*inject_loader)(t_info *, void *);
 	void		(*replace_headers)(t_info *, void *);
-	void		(*append_code)(t_info *, void *);
-	void		(*replace_jmp_end_woody)(t_info *, void *);
+	void		(*append_woody)(t_info *, void *);
+	void		(*replace_jmp_end_woody)(t_info *);
 }						t_funcs;
 
 struct				s_MEgA_StRuCtuRrRE_HAXOR
@@ -69,7 +69,7 @@ int32_t		get_case_4(t_info *info);
 		/* injection handler */
 void		create_woody(t_info *info);
 void		inject_woody(t_info *info, void *new_file);
-void		inject_woody_loader(t_info *info, void *new_file);
+void		append_woody_loader(t_info *info, void *new_file);
 
 
 		/* CRYPTO HANDLER */
