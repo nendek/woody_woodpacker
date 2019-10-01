@@ -52,6 +52,26 @@ void			encryption64(t_info *info, void *new_file)
 		}
 		nb_laps++;
 	}
+
+	//__asm__(
+	//		"movq %1, %%r8\t\n"
+	//		"movq %2, %%r9\t\n"
+	//		"loop2:\t\n"
+	//		//"lea %5, %%rdi\t\n"
+	//		"loop1:\t\n"
+	//		"movl (%%rdi), %%eax\t\n"
+	//		"xor %%rdx, %%rax\t\n"
+	//		"stos	%%eax,%%es:(%%rdi)\t\n"
+	//		"sub    $0x4, %%ecx\t\n"
+	//		"cmp    0x0, %%ecx\t\n"
+	//		"jg     loop1\t\n"
+	//		"add    %%r8d, %%edx\t\n"
+	//		"dec    %%r9\t\n"
+	//		"test   %%r9, %%r9\t\n"
+	//		"jne    loop2\t\n"
+	//		: "=d" (key), "=c" (info->text_size), "=D" (text)
+	//		: "g" (TIMING), "g" (NB_TIMING) 			://"%rdx", "%r8", "%r9", "%rcx", "%rdi", "%rax"
+	//       );
 }
 
 void			encryption32(t_info *info, void *new_file)
