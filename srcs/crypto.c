@@ -32,28 +32,11 @@ void			encryption64(t_info *info, void *new_file)
 {
 	Elf64_Phdr	*header;
 	uint32_t	*text;
-	//size_t		i;
-	//int32_t		nb_laps;
 	uint32_t	key;
 
 	header = (Elf64_Phdr *)(info->file + info->segment_text_header);
 	text = (uint32_t *)(new_file + info->base_entry - (header->p_vaddr - header->p_offset));
-
-	//nb_laps = 0;
 	key = info->Key;
-	dprintf(1, "key: %d | text_size: %ld | text: %p\n", key, info->text_size, text);
-	//while (nb_laps < NB_TIMING)
-	//{
-	//	i = 0;
-	//	key = key_timing(key);
-	//	while ((i + 1)* 4 < info->text_size)
-	//	{
-	//		text[i] ^= key;
-	//		i++;
-	//	}
-	//	nb_laps++;
-	//}
-
 	__asm__ (
 			"movq %0, %%r8\t\n"	//timing
 			"movq %1, %%r9\t\n"	//nb_timing
@@ -65,7 +48,7 @@ void			encryption64(t_info *info, void *new_file)
 			"movq %%r11, %%rdi\t\n"	//text
 			"loop1:\t\n"
 			"movl (%%rdi), %%eax\t\n"
-			"xor %%rdx, %%rax\t\n"
+			"xorq %%rdx, %%rax\t\n"
 			"stos	%%eax,%%es:(%%rdi)\t\n"
 			"sub    $4, %%ecx\t\n"
 			"cmp    $0, %%ecx\t\n"
@@ -75,8 +58,8 @@ void			encryption64(t_info *info, void *new_file)
 			"test   %%r9, %%r9\t\n"
 			"jne    loop2\t\n"
 			:
-			:"g" (TIMING), "g" (NB_TIMING), "g" (key), "g" (info->text_size), "g" (text)
-			://"r11", "r10", "rdx", "r8", "rcx", "rdi", "rdx", "rax"
+			:"g" (TIMING), "g" (NB_TIMING), "g" (key - TIMING), "g" (info->text_size - 4), "g" (text)
+			:
 	       );
 }
 
@@ -84,24 +67,33 @@ void			encryption32(t_info *info, void *new_file)
 {
 	Elf32_Phdr	*header;
 	uint32_t	*text;
-	size_t		i;
-	int32_t		nb_laps;
 	uint32_t	key;
 
 	header = (Elf32_Phdr *)(info->file + info->segment_text_header);
 	text = (uint32_t *)(new_file + info->base_entry - (header->p_vaddr - header->p_offset));
-
-	nb_laps = 0;
 	key = info->Key;
-	while (nb_laps < NB_TIMING)
-	{
-		i = 0;
-		key = key_timing(key);
-		while ((i + 1)* 4 < info->text_size)
-		{
-			text[i] ^= key;
-			i++;
-		}
-		nb_laps++;
-	}
+	__asm__ (
+			"movq %0, %%r8\t\n"	//timing
+			"movq %1, %%r9\t\n"	//nb_timing
+			"movl %2, %%edx\t\n"	//key
+			"movq %3, %%r10\t\n"	//text size RCX
+			"movq %4, %%r11\t\n"	//text RDI
+			"loop4:\t\n"
+			"movq %%r10, %%rcx\t\n"
+			"movq %%r11, %%rdi\t\n"	//text
+			"loop3:\t\n"
+			"movl (%%rdi), %%eax\t\n"
+			"xorq %%rdx, %%rax\t\n"
+			"stos	%%eax,%%es:(%%rdi)\t\n"
+			"sub    $4, %%ecx\t\n"
+			"cmp    $0, %%ecx\t\n"
+			"jg     loop3\t\n"
+			"sub    %%r8d, %%edx\t\n"
+			"dec    %%r9\t\n"
+			"test   %%r9, %%r9\t\n"
+			"jne    loop4\t\n"
+			:
+			:"g" (TIMING), "g" (NB_TIMING), "g" (key - TIMING), "g" (info->text_size - 4), "g" (text)
+			:
+	       );
 }

@@ -47,12 +47,7 @@ loop1:
 	dec r9
 	test r9, r9
 	jne loop2
-;	mov al, BYTE [rdi]
-;	xor rax, rdx
-;	stosb
-;	dec ecx
-;	test ecx, ecx
-;	jne loop
+
 ; MPROTEC
 mov rdx, 0x7 ; WRITE | EXEC | READ
 mov esi, DWORD [rsp] ; taille du .text
@@ -61,8 +56,4 @@ lea rdi, [$ - 0x1] ; debut du .text MODULABLE
 and rdi, 0xFFFFFFFFFFFFF000
 mov rax, 0xa
 syscall
-
-	
-
-
 add rsp, 0x10
