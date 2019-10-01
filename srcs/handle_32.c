@@ -29,15 +29,22 @@ static char pop_all[] =
 "\x61";
 
 
-Elf32_Phdr	*get_last_load32(void *file)
+Elf32_Phdr	*get_last_load32(t_info *info, void *file)
 {
 	Elf32_Phdr	*program_header;
 
-	program_header = (Elf32_Phdr *)(file + sizeof(Elf32_Ehdr));
+	if (!(program_header = move_ptr(info, file, sizeof(Elf32_Ehdr))))
+		return (0);
 	while (program_header->p_type != PT_LOAD)
-		program_header++;
+	{
+		if (!(program_header = move_ptr(info, program_header, sizeof(Elf32_Phdr))))
+			return (0);
+	}
 	while (program_header->p_type == PT_LOAD)
-		program_header++;
+	{
+		if (!(program_header = move_ptr(info, program_header, sizeof(Elf32_Phdr))))
+			return (0);
+	}
 	program_header--;
 	return (program_header);
 }
@@ -229,8 +236,9 @@ static void			replace_headers32(t_info *info, void *new_file)
 static size_t				get_text_size(t_info *info)
 {
     Elf32_Phdr  *program_header;
-	program_header = (Elf32_Phdr *)(info->file + info->segment_text_header);
 
+	if (!(program_header = (Elf32_Phdr *)(move_ptr(info, info->file, info->segment_text_header))))
+		return (1);
     return (program_header->p_vaddr + program_header->p_filesz - info->base_entry);
 }
 
@@ -240,17 +248,19 @@ static size_t				get_text_segment(t_info *info)
 	int32_t		i;
 
 	i = 0;
-	header = (Elf32_Phdr *)(info->file + sizeof(Elf32_Ehdr));
+	if (!(header = (Elf32_Phdr *)(move_ptr(info, info->file, sizeof(Elf32_Ehdr)))))
+		return (-1);
 	while (i < info->nb_hp)
 	{
 		if ((header->p_type == PT_LOAD) && (info->base_entry > header->p_vaddr) && (info->base_entry < header->p_vaddr + header->p_memsz))
 			return ((size_t)header - (size_t)(info->file));
 
-		header++;
+		if (!(header = move_ptr(info, header, sizeof(Elf32_Phdr))))
+			return (-1);
 		i++;
 	}
 	dprintf(2, "Error no .text section detected");
-	return (0);
+	return (-1);
 }
 
 int32_t				get_elf32_zone(t_info *info)
@@ -268,12 +278,15 @@ int32_t				get_elf32_zone(t_info *info)
 	info->funcs->append_woody_loader = &append_woody_loader32;
 	info->funcs->encryption = &encryption32;
 
-	program_header = get_last_load32(info->file);
+	if (!(program_header = get_last_load32(info, info->file)))
+		return (1);
 	// save usefull infos
 	info->nb_hp = header->e_phnum;
 	info->base_entry = header->e_entry;
-	info->segment_text_header = get_text_segment(info);
-	info->text_size = get_text_size(info);
+	if ((info->segment_text_header = get_text_segment(info)) == (size_t)(-1))
+		return (1);
+	if ((info->text_size = get_text_size(info)) == (size_t)(-1))
+		return (1);
 	info->bss_size = program_header->p_memsz - program_header->p_filesz;
 	info->end_data_seg = program_header->p_offset + program_header->p_filesz;
 	info->loader_size = LOADER32_SIZE + JMP32_SIZE;

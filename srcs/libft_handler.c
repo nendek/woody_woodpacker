@@ -19,3 +19,13 @@ void		ft_bzero(char *str, size_t len)
 	while (i < len)
 		str[i++] = '\0';
 }
+
+void		*move_ptr(t_info *info, void *ptr, size_t to_add)
+{
+	if ((size_t)ptr + to_add >= (size_t)(info->file + info->file_size))
+	{
+		dprintf(2, "Error, file bad formated\n");
+		return (NULL);
+	}
+	return ((void *)((size_t)ptr + to_add));
+}

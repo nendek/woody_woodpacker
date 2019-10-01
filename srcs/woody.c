@@ -39,7 +39,10 @@ static t_info	*init_info()
 	if (!(ret = malloc(sizeof(t_info))))
 		return (NULL);
 	if (!(ret->funcs = malloc(sizeof(t_funcs))))
+	{
+		free(ret);
 		return (NULL);
+	}
 
 	ret->file = NULL;
 	return (ret);
@@ -58,21 +61,29 @@ int		main(int argc, char **argv)
 	}
 	if ((fd = open(argv[1], O_RDONLY)) < 0)
 		return (EXIT_FAILURE);
-	if (!(info = init_info()))
-		return (0);
 	if (fstat(fd, &buf) < 0)
 	{
 		close(fd);
 		return (EXIT_FAILURE);
 	}
+	if (!(info = init_info()))
+		return (0);
 	if ((info->file = mmap(0, (size_t)buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+	{
+		free(info->funcs);
+		free(info);
 		return (EXIT_FAILURE);
+	}
 	info->file_size = (size_t)buf.st_size;
 	if (get_vulnerable_zone(info, get_type(info->file)) == 1)
+	{
+		free(info->funcs);
+		free(info);
 		return (EXIT_FAILURE);
+	}
 	create_Key(info);
 	create_woody(info);
-	dprintf(1, "%x\n", info->Key);
+	dprintf(1, "Encryption Key : %#x\n", info->Key);
 	free(info->funcs);
 	free(info);
 	return (0);

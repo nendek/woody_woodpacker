@@ -62,14 +62,14 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 };
 		/* parsing_files */
 int32_t		get_elf64_zone(t_info *info);
-Elf64_Phdr  *get_last_load64(void *file);
+Elf64_Phdr  *get_last_load64(t_info *info, void *file);
 int32_t		get_elf32_zone(t_info *info);
 int32_t		get_case64_1(t_info *info);
 int32_t		get_case64_2(t_info *info);
 int32_t		get_case64_3(t_info *info);
 int32_t		get_case64_4(t_info *info);
 
-Elf32_Phdr  *get_last_load32(void *file);
+Elf32_Phdr  *get_last_load32(t_info *info, void *file);
 int32_t		get_case32_1(t_info *info);
 int32_t		get_case32_2(t_info *info);
 int32_t		get_case32_3(t_info *info);
@@ -92,5 +92,6 @@ void		encryption32(t_info *info, void *file);
 		/* LIBFT_HANDLER */
 void    ft_memcpy(void *dest, void *src, size_t size);
 void    ft_bzero(char *str, size_t len);
+void	*move_ptr(t_info *info, void *ptr, size_t to_add);
 
 #endif
