@@ -45,6 +45,7 @@ static t_info	*init_info()
 	}
 
 	ret->file = NULL;
+	ret->corruption = 0;
 	return (ret);
 }
 
@@ -83,7 +84,8 @@ int		main(int argc, char **argv)
 	}
 	create_Key(info);
 	create_woody(info);
-	dprintf(1, "Encryption Key : %#x\n", info->Key);
+	if (info->corruption == 0)
+		dprintf(1, "Encryption Key : %#x\n", info->Key);
 	free(info->funcs);
 	free(info);
 	return (0);

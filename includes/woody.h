@@ -37,7 +37,10 @@ struct				s_MEgA_StRuCtuRrRE_HAXOR
 {
 	void			*file;
 	size_t			file_size;
+	void			*new_file;
+	size_t			new_file_size;
 	int				injection_mode;
+	int				corruption;
 
 	// base file info
 	int32_t			nb_hp;
@@ -91,6 +94,7 @@ void		encryption32(t_info *info, void *file);
 
 		/* LIBFT_HANDLER */
 void    ft_memcpy(void *dest, void *src, size_t size);
+void	ft_memcpy_p(void *dest, void *src, size_t size, t_info *info);
 void    ft_bzero(char *str, size_t len);
 void	*move_ptr(t_info *info, void *ptr, size_t to_add);
 

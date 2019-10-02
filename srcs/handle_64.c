@@ -99,6 +99,12 @@ static void		modify_woody(t_info *info)
 
 static void		append_woody64(t_info *info, void *new_file)
 {
+	if (new_file + info->offset_woody_file + WOODY_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	// add .bss section to the physical file : DO nothing, just jump the section
 
 	// edit shellcode with infos
@@ -117,6 +123,12 @@ static void		append_woody64(t_info *info, void *new_file)
 
 void			inject_woody64(t_info *info, void *new_file)
 {
+	if (new_file + WOODY_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	// edit shellcode with infos
 	modify_woody(info);
 
@@ -137,6 +149,12 @@ void			append_woody_loader64(t_info *info, void *new_file)
 	info->offset_woody_mem -= PUSHALL_SIZE;
 
 // 	info->offset_woody_file += PUSHALL_SIZE;
+	if (new_file + info->offset_woody_file + PUSHALL_SIZE + WOODY_SIZE + POPALL_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	ft_memcpy(new_file + info->offset_woody_file, push_all, PUSHALL_SIZE);
 	ft_memcpy(new_file + info->offset_woody_file + PUSHALL_SIZE, woody64, WOODY_SIZE);
 	ft_memcpy(new_file + info->offset_woody_file + PUSHALL_SIZE + WOODY_SIZE, pop_all, POPALL_SIZE);
@@ -191,6 +209,12 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 	// end injection
 	ft_memcpy(inject, loader64, LOADER64_SIZE);
 	ft_memcpy(inject + LOADER64_SIZE, jmp64, JMP64_SIZE);
+	if (new_file + info->loader_size >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return (0);
+	}
 	ft_memcpy(new_file, inject, info->loader_size);
 	free(inject);
 	return (1);
@@ -307,7 +331,7 @@ int32_t				get_elf64_zone(t_info *info)
 	}
 	if (get_case64_2(info) == 0)
 	{
-		info->injection_mode = WOODY_BSS;
+	info->injection_mode = WOODY_BSS;
 		return (0);
 	}
 	if (get_case64_3(info) == 0)
