@@ -29,7 +29,7 @@ int32_t	get_vulnerable_zone(t_info *info, int32_t type)
 		return (get_elf64_zone(info));
 	if (type == ELF_32)
 		return (get_elf32_zone(info));
-	return (0);
+	return (1);
 }
 
 static t_info	*init_info()

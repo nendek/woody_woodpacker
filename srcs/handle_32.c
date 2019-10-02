@@ -318,21 +318,21 @@ int32_t				get_elf32_zone(t_info *info)
 	info->woody_size = WOODY_SIZE + JMPEW_SIZE;
 	info->push_size = PUSHALL_SIZE;
 
-// 	if (get_case32_1(info) == 0)
-// 	{
-// 		info->injection_mode = WOODY_PADDING;
-// 		return (0);
-// 	}
-// 	if (get_case32_2(info) == 0)
-// 	{
-// 		info->injection_mode = WOODY_BSS;
-// 		return (0);
-// 	}
-// 	if (get_case32_3(info) == 0)
-// 	{
-// 		info->injection_mode = DOUBLE_PADDING;
-// 		return (0);
-// 	}
+	if (get_case32_1(info) == 0)
+	{
+		info->injection_mode = WOODY_PADDING;
+		return (0);
+	}
+	if (get_case32_2(info) == 0)
+	{
+		info->injection_mode = WOODY_BSS;
+		return (0);
+	}
+	if (get_case32_3(info) == 0)
+	{
+		info->injection_mode = DOUBLE_PADDING;
+		return (0);
+	}
 	if (get_case32_4(info) == 0)
 	{
 		info->injection_mode = DOUBLE_BSS;
