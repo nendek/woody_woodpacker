@@ -16,7 +16,7 @@ int32_t		check_new_file(t_info *info, size_t size)
 		return (1);
 	if (size < info->offset_woody_file + info->woody_size)
 		return (1);
-	
+
 	return (0);
 }
 
@@ -60,7 +60,8 @@ void		handle_case1(t_info *info)
 	info->funcs->encryption(info, new_file);
 
 	// write the file
-	print_woody(new_file, new_file_size, "woody");
+	if (info->corruption == 0)
+		print_woody(new_file, new_file_size, "woody");
 	free(new_file);
 }
 
@@ -100,7 +101,8 @@ void		handle_case2(t_info *info)
 	info->funcs->encryption(info, new_file);
 
 	// write the file
-	print_woody(new_file, new_file_size, "woody");
+	if (info->corruption == 0)
+		print_woody(new_file, new_file_size, "woody");
 	free(new_file);
 }
 
@@ -122,9 +124,9 @@ void		handle_case3(t_info *info)
 
 	// inject woody_loader
 	info->funcs->append_woody_loader(info, new_file);
-// 	write(1, "ici\n", 4);
-// 	free(new_file);
-// 	write(1, "ici2\n", 5);
+	// 	write(1, "ici\n", 4);
+	// 	free(new_file);
+	// 	write(1, "ici2\n", 5);
 
 	// complete the file
 	ft_memcpy_p(new_file + info->offset_woody_file + info->woody_size + (info->push_size * 2), info->file + info->offset_woody_file + info->woody_size + (info->push_size * 2), new_file_size - (info->offset_woody_file + info->woody_size + (info->push_size * 2)), info);
@@ -136,7 +138,8 @@ void		handle_case3(t_info *info)
 	info->funcs->encryption(info, new_file);
 
 	// write the file
-	print_woody(new_file, new_file_size, "woody");
+	if (info->corruption == 0)
+		print_woody(new_file, new_file_size, "woody");
 	free(new_file);
 }
 
@@ -169,7 +172,8 @@ void		handle_case4(t_info *info)
 	info->funcs->encryption(info, new_file);
 
 	// write the file
-	print_woody(new_file, new_file_size, "woody");
+	if (info->corruption == 0)
+		print_woody(new_file, new_file_size, "woody");
 	free(new_file);
 }
 
@@ -177,7 +181,6 @@ void		create_woody(t_info *info)
 {
 	if (info->corruption == 1)
 		return ;
-	dprintf(1, "mode : %#x\n", info->injection_mode);
 
 	if (info->injection_mode == WOODY_PADDING)
 		handle_case1(info);

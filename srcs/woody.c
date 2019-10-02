@@ -9,17 +9,18 @@ int32_t	get_type(void *file)
 	if (magic == 0x464C457F)
 	{
 		elf = (Elf64_Ehdr *)file;
-// 		if (elf->e_type != 2)
-// 		{
-// 			dprintf(2, "ERROR, file is not an EXEC\n");
-// 			return (0);
-// 		}
+		if (elf->e_type != 2 && elf->e_type != 3)
+		{
+			dprintf(2, "ERROR, file is not an EXEC\n");
+			return (0);
+		}
 		if (elf->e_machine == 0x3)
 			return (ELF_32);
 		if (elf->e_machine == 0x3e)
 			return (ELF_64);
 		dprintf(2, "ERROR in Elf_header\n");
 	}
+	dprintf(2, "ERROR file is not ELF\n");
 	return (0);
 }
 
@@ -55,9 +56,9 @@ int		main(int argc, char **argv)
 	struct stat		buf;
 	int32_t			fd;
 
-	if (argc != 2)
+	if (argc != 2 && argc != 3)
 	{
-		dprintf(1, "usage: ./woody_woodpacker [file]\n");
+		dprintf(1, "usage: ./woody_woodpacker file [key]\n");
 		return (EXIT_FAILURE);
 	}
 	if ((fd = open(argv[1], O_RDONLY)) < 0)
@@ -82,7 +83,10 @@ int		main(int argc, char **argv)
 		free(info);
 		return (EXIT_FAILURE);
 	}
-	create_Key(info);
+	if (argc == 2)
+		create_Key(info);
+	else
+		get_Key(info, argv[2]);
 	create_woody(info);
 	if (info->corruption == 0)
 		dprintf(1, "Encryption Key : %#x\n", info->Key);

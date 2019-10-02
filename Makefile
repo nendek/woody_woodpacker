@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror #-g -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror
 
 NAME = woody_woodpacker
 FILES = woody.c creation.c crypto.c libft_handler.c \

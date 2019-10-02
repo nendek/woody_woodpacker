@@ -86,6 +86,7 @@ void		append_woody_loader(t_info *info, void *new_file);
 
 
 		/* CRYPTO HANDLER */
+void		get_Key(t_info *info, char *str);
 void		create_Key(t_info *info);
 uint32_t	get_last_key(uint32_t master_Key);
 void		encryption64(t_info *info, void *file);
@@ -93,9 +94,10 @@ void		encryption32(t_info *info, void *file);
 
 
 		/* LIBFT_HANDLER */
-void    ft_memcpy(void *dest, void *src, size_t size);
-void	ft_memcpy_p(void *dest, void *src, size_t size, t_info *info);
-void    ft_bzero(char *str, size_t len);
-void	*move_ptr(t_info *info, void *ptr, size_t to_add);
+void		ft_memcpy(void *dest, void *src, size_t size);
+void		ft_memcpy_p(void *dest, void *src, size_t size, t_info *info);
+void		ft_bzero(char *str, size_t len);
+uint32_t	ft_atoi(char *str);
+void		*move_ptr(t_info *info, void *ptr, size_t to_add);
 
 #endif

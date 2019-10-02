@@ -10,6 +10,11 @@ void			create_Key(t_info *info)
 	info->Key = rand();
 }
 
+void			get_Key(t_info *info, char *str)
+{
+	info->Key = ft_atoi(str);
+}
+
 static uint32_t	key_timing(uint32_t current_key)
 {
 	return (current_key - TIMING);
@@ -36,7 +41,8 @@ void			encryption64(t_info *info, void *new_file)
 
 	header = (Elf64_Phdr *)(info->file + info->segment_text_header);
 	text = (uint32_t *)(new_file + info->base_entry - (header->p_vaddr - header->p_offset));
-	if (((size_t)(text + info->text_size) > (size_t)(info->new_file + info->new_file_size)) || ((size_t)(text + info->text_size) < (size_t)(info->new_file)))
+
+	if((size_t)text + info->text_size > (size_t)(info->new_file + info->new_file_size))
 	{
 		info->corruption = 1;
 		dprintf(2, "Error, file bad formated\n");
@@ -77,7 +83,7 @@ void			encryption32(t_info *info, void *new_file)
 
 	header = (Elf32_Phdr *)(info->file + info->segment_text_header);
 	text = (uint32_t *)(new_file + info->base_entry - (header->p_vaddr - header->p_offset));
-	if (((size_t)(text + info->text_size) > (size_t)(info->new_file + info->new_file_size)) || ((size_t)(text + info->text_size) < (size_t)(info->new_file)))
+	if((size_t)text + info->text_size > (size_t)(info->new_file + info->new_file_size))
 	{
 		info->corruption = 1;
 		dprintf(2, "Error, file bad formated\n");

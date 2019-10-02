@@ -53,3 +53,52 @@ void		*move_ptr(t_info *info, void *ptr, size_t to_add)
 	}
 	return ((void *)((size_t)ptr + to_add));
 }
+
+static  int		ft_iswp(char c)
+{
+	if (c == ' ' || c == '\t' || c == '\n' \
+			|| c == '\r' || c == '\v' || c == '\f')
+		return (1);
+	return (0);
+}
+
+static int		ft_isdigit(int c)
+{
+	if (c >= '0' && c <= '9')
+		return (1);
+	else
+		return (0);
+}
+
+static int	sign(int *i, const char *str)
+{
+	if (str[*i] == '-')
+	{
+		*i = *i + 1;
+		return (-1);
+	}
+	if (str[*i] == '+')
+		*i = *i + 1;
+	return (1);
+}
+
+uint32_t	ft_atoi(char *str)
+{
+	int		i;
+	int		res;
+	int		s;
+
+	i = 0;
+	res = 0;
+	while (str[i] != '\0' && ft_iswp(str[i]) == 1)
+		i++;
+	s = sign(&i, str);
+	while (str[i] != '\0')
+	{
+		if (ft_isdigit(str[i]) != 1)
+			return ((uint32_t)(res * s));
+		res = res * 10 + str[i] - '0';
+		i++;
+	}
+	return ((uint32_t)(res * s));
+}
