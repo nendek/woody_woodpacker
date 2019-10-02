@@ -144,17 +144,17 @@ void			inject_woody64(t_info *info, void *new_file)
 
 void			append_woody_loader64(t_info *info, void *new_file)
 {
-	info->offset_woody_mem += PUSHALL_SIZE;
-	modify_woody(info);
-	info->offset_woody_mem -= PUSHALL_SIZE;
-
-// 	info->offset_woody_file += PUSHALL_SIZE;
 	if (new_file + info->offset_woody_file + PUSHALL_SIZE + WOODY_SIZE + POPALL_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
 	{
 		info->corruption = 1;
 		dprintf(2, "Error, file bad formated\n");
 		return ;
 	}
+	info->offset_woody_mem += PUSHALL_SIZE;
+	modify_woody(info);
+	info->offset_woody_mem -= PUSHALL_SIZE;
+
+// 	info->offset_woody_file += PUSHALL_SIZE;
 	ft_memcpy(new_file + info->offset_woody_file, push_all, PUSHALL_SIZE);
 	ft_memcpy(new_file + info->offset_woody_file + PUSHALL_SIZE, woody64, WOODY_SIZE);
 	ft_memcpy(new_file + info->offset_woody_file + PUSHALL_SIZE + WOODY_SIZE, pop_all, POPALL_SIZE);
@@ -211,6 +211,7 @@ static int32_t		inject_loader64(t_info *info, void *new_file)
 	ft_memcpy(inject + LOADER64_SIZE, jmp64, JMP64_SIZE);
 	if (new_file + info->loader_size >= info->new_file + info->new_file_size)
 	{
+		free(inject);
 		info->corruption = 1;
 		dprintf(2, "Error, file bad formated\n");
 		return (0);

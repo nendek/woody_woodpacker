@@ -90,6 +90,12 @@ static void		modify_woody(t_info *info)
 
 static void		append_woody32(t_info *info, void *new_file)
 {
+	if (new_file + info->offset_woody_file + WOODY_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	// add .bss section to the physical file : DO nothing, just jump the section
 
 	// edit shellcode with infos
@@ -107,6 +113,12 @@ static void		append_woody32(t_info *info, void *new_file)
 
 void			inject_woody32(t_info *info, void *new_file)
 {
+	if (new_file + WOODY_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	// edit shellcode with infos
 	modify_woody(info);
 
@@ -122,6 +134,12 @@ void			inject_woody32(t_info *info, void *new_file)
 
 void			append_woody_loader32(t_info *info, void *new_file)
 {
+	if (new_file + info->offset_woody_file + PUSHALL_SIZE + WOODY_SIZE + POPALL_SIZE + JMPEW_SIZE >= info->new_file + info->new_file_size)
+	{
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return ;
+	}
 	info->offset_woody_mem += PUSHALL_SIZE;
 	modify_woody(info);
 	info->offset_woody_mem -= PUSHALL_SIZE;
@@ -182,6 +200,13 @@ static int32_t		inject_loader32(t_info *info, void *new_file)
 	modify_loader(info);
 
 	// end injection
+	if (new_file + info->loader_size >= info->new_file + info->new_file_size)
+	{
+		free(inject);
+		info->corruption = 1;
+		dprintf(2, "Error, file bad formated\n");
+		return (0);
+	}
 	ft_memcpy(inject, loader32, LOADER32_SIZE);
 	ft_memcpy(inject + LOADER32_SIZE, jmp32, JMP32_SIZE);
 	ft_memcpy(new_file, inject, info->loader_size);
@@ -293,21 +318,21 @@ int32_t				get_elf32_zone(t_info *info)
 	info->woody_size = WOODY_SIZE + JMPEW_SIZE;
 	info->push_size = PUSHALL_SIZE;
 
-	if (get_case32_1(info) == 0)
-	{
-		info->injection_mode = WOODY_PADDING;
-		return (0);
-	}
-	if (get_case32_2(info) == 0)
-	{
-		info->injection_mode = WOODY_BSS;
-		return (0);
-	}
-	if (get_case32_3(info) == 0)
-	{
-		info->injection_mode = DOUBLE_PADDING;
-		return (0);
-	}
+// 	if (get_case32_1(info) == 0)
+// 	{
+// 		info->injection_mode = WOODY_PADDING;
+// 		return (0);
+// 	}
+// 	if (get_case32_2(info) == 0)
+// 	{
+// 		info->injection_mode = WOODY_BSS;
+// 		return (0);
+// 	}
+// 	if (get_case32_3(info) == 0)
+// 	{
+// 		info->injection_mode = DOUBLE_PADDING;
+// 		return (0);
+// 	}
 	if (get_case32_4(info) == 0)
 	{
 		info->injection_mode = DOUBLE_BSS;
