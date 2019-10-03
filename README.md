@@ -33,10 +33,20 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
 * Prerequis : 
   * Il faut assez de place dans le padding du segment text pour acceuillir Loader.
   * Il faut assez de place dans le padding d'un autre segment pour acceuillir Woody.
-* Conséquences : Le binaire n'est quasiment pas modifié, seul l'entry point ainsi que les tailles memoires des segments infectes sont modifiées
+* Conséquences : 
+ * L'entry point est modifié
+ * La taille du segment .text est modifiée
+ * La taille d'un autre segment est modifiée
 
 ### Méthode 2
 
-- Loader est placé dans le padding du segment contenant la section .text
-- Woody est placé après 
-- Loader est placé dans le padding du segment contenant la section .text
+* Loader est placé dans le padding du segment contenant la section .text
+* Woody est ajouté a la fin de la section .bss
+* Prerequis :
+  * Il faut assez de place dans le padding du segment text pour acceuillir Loader.
+* Conséquences : 
+  * L'entry point est modifié
+  * La taille du segment .text est modifiée
+  * La taille du segment contenant la section .bss est modifiée
+  * La section .bss est physiquement présente dans le fichier
+  * Les sections headers peuvent etre ecrasés
