@@ -36,7 +36,7 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
 * Conséquences : 
   * L'entry point est modifié
   * La taille du segment .text est modifiée
-  * La taille d'un autre segment est modifiée
+  * La taille d'un autre segment PT_LOAD est modifiée
 
 ### Méthode 2
 
@@ -49,4 +49,27 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
   * La taille du segment .text est modifiée
   * La taille du segment contenant la section .bss est modifiée
   * La section .bss est physiquement présente dans le fichier
-  * Les sections headers peuvent etre ecrasés
+  * Les sections headers peuvent potentiellement etre ecrasés
+
+### Méthode 3
+
+* Loader est placé dans le padding d'un segment PT_LOAD autre que le segment contenant la section .text
+* Woody est placé directement a la suite de Loader
+* Prerequis :
+  * Il faut assez de place dans le padding d'un segment PT_LOAD pour acceuillir Loader et Woody
+* Conséquences :
+  * L'entry point est modifié
+  * La taille d'un segment PT_LOAD est modifiée
+  * Le segment PT_LOAD modifié voit ses droits modifiés pour y ajouter le droit d'execution
+  
+### Méthode 4
+
+* Loader est ajouté a la fin de la section .bss
+* Woody est placé directement a la suite de Loader
+* Prérequis : Aucun
+* Conséquences :
+  * L'entry point est modifié
+  * La taille du segment contenant la section .bss est modifiée
+  * La section .bss est physiquement présente dans le fichier
+  * Les sections headers peuvent potentiellement etre ecrasés
+  * Le segment PT_LOAD modifié voit ses droits modifiés pour y ajouter le droit d'execution
