@@ -28,8 +28,15 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
 
 ### Méthode 1
 
-- Loader est placé dans le padding du segment contenant la section .text
-- Woody est placé dans le padding d'un autre segment PT_LOAD
-- Prerequis : Il faut assez de place dans le padding du segment text pour acceuillir Loader, et assez de place dans le padding d'un autre segment pour acceuillir Woody.
-- Conséquences : Le binaire n'est quasiment pas modifié, seul l'entry point ainsi que les tailles memoires des segments infectes sont modifiées
+* Loader est placé dans le padding du segment contenant la section .text
+* Woody est placé dans le padding d'un autre segment PT_LOAD
+* Prerequis : 
+  * Il faut assez de place dans le padding du segment text pour acceuillir Loader.
+  * Il faut assez de place dans le padding d'un autre segment pour acceuillir Woody.
+* Conséquences : Le binaire n'est quasiment pas modifié, seul l'entry point ainsi que les tailles memoires des segments infectes sont modifiées
 
+### Méthode 2
+
+- Loader est placé dans le padding du segment contenant la section .text
+- Woody est placé après 
+- Loader est placé dans le padding du segment contenant la section .text
