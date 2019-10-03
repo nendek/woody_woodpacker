@@ -1,6 +1,6 @@
 # woody_woodpacker
 
-# fonctionnement de woody_woodpacker
+# fonctionnement global
 
 Le packing se fait en injectant 2 shellcodes:
 - loader, son role est d'appeler le 2eme shellcode 
@@ -20,3 +20,16 @@ ce shellcode est injecté a la fin du programme, il peut potentiellement chevauc
 Le fonctionnement du shellcode est le suivant:
 Il va ecrire "...WOODY...\n" sur l'entrée standard, 
 puis va jump sur la deuxieme moitée du shellcode loader
+
+
+# Details techniques
+
+Le programme dispose de 4 méthodes d'injection differentes, classées de la plus "discrète" à la moins discrète.
+
+### Méthode 1
+
+- Loader est placé dans le padding du segment contenant la section .text
+- Woody est placé dans le padding d'un autre segment PT_LOAD
+- Prerequis : Il faut assez de place dans le padding du segment text pour acceuillir Loader, et assez de place dans le padding d'un autre segment pour acceuillir Woody.
+- Conséquences : Le binaire n'est quasiment pas modifié, seul l'entry point ainsi que les tailles memoires des segments infectes sont modifiées
+
