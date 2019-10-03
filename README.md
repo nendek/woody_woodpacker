@@ -73,3 +73,43 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
   * La section .bss est physiquement présente dans le fichier
   * Les sections headers peuvent potentiellement etre ecrasés
   * Le segment PT_LOAD modifié voit ses droits modifiés pour y ajouter le droit d'execution
+
+# Infinite packing
+
+```
+root@kali:~/woody/clean# sh loop.sh /bin/ls 50
+rm -rf objs
+rm -f woody_woodpacker
+mkdir -p objs
+gcc -Wall -Wextra -Werror -I includes -c -o objs/woody.o srcs/woody.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/creation.o srcs/creation.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/crypto.o srcs/crypto.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/libft_handler.o srcs/libft_handler.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/get_case64.o srcs/get_case64.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/handle_64.o srcs/handle_64.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/get_case32.o srcs/get_case32.c
+gcc -Wall -Wextra -Werror -I includes -c -o objs/handle_32.o srcs/handle_32.c
+gcc -Wall -Wextra -Werror -I includes -o woody_woodpacker objs/woody.o objs/creation.o objs/crypto.o objs/libft_handler.o objs/get_case64.o objs/handle_64.o objs/get_case32.o objs/handle_32.o
+Encryption Key : 0x7ccf722c
+Encryption Key : 0x59913488
+1
+Encryption Key : 0x3454ff1f
+2
+Encryption Key : 0x3a5dc83
+3
+...
+...
+Encryption Key : 0x3d274a5e
+50
+root@kali:~/woody/clean# ./woody
+....WOODY....
+....WOODY....
+....WOODY....
+....WOODY....
+...
+...
+....WOODY....
+....WOODY....
+....WOODY....
+bytecode  includes  loop.sh  Makefile  objs  README.md	srcs  woody  woody_woodpacker
+```
