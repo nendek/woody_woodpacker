@@ -34,9 +34,9 @@ Le programme dispose de 4 méthodes d'injection differentes, classées de la plu
   * Il faut assez de place dans le padding du segment text pour acceuillir Loader.
   * Il faut assez de place dans le padding d'un autre segment pour acceuillir Woody.
 * Conséquences : 
- * L'entry point est modifié
- * La taille du segment .text est modifiée
- * La taille d'un autre segment est modifiée
+  * L'entry point est modifié
+  * La taille du segment .text est modifiée
+  * La taille d'un autre segment est modifiée
 
 ### Méthode 2
 
